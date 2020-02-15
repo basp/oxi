@@ -1,9 +1,9 @@
-using System;
-using Xunit;
-
 namespace Oxi.Tests
 {
-    public class UnitTest1
+    using System;
+    using Xunit;
+
+    public class LexerTest
     {
         [Fact]
         public void Test1()
