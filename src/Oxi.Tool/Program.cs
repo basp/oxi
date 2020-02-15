@@ -4,12 +4,12 @@
     using PowerArgs;
 
     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
-    class Program
+    internal class Program
     {
         [HelpHook]
         public bool Help { get; set; }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             if (args.Length > 0)
             {
