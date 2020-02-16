@@ -18,7 +18,30 @@ namespace Oxi
                     return (double)left / (double)right;
                 case "*":
                     return (double)left * (double)right;
+                case "<":
+                    return (double)left < (double)right;
+                case ">":
+                    return (double)left > (double)right;
+                case "<=":
+                    return (double)left <= (double)right;
+                case ">=":
+                    return (double)left >= (double)right;
                 case "+":
+                    if (left is string && right is string)
+                    {
+                        return string.Concat(left, right);
+                    }
+
+                    if (left is string)
+                    {
+                        return string.Concat(left, Stringify(right));
+                    }
+
+                    if (right is string)
+                    {
+                        return string.Concat(Stringify(left), right);
+                    }
+
                     return (double)left + (double)right;
             }
 
@@ -44,7 +67,22 @@ namespace Oxi
             return null;
         }
 
-        private static bool IsThruthy(object value)
+        public static string Stringify(object value)
+        {
+            if (value == null)
+            {
+                return "nil";
+            }
+
+            switch (value)
+            {
+                case bool x: return x.ToString().ToLower();
+                case double x: return x.ToString();
+                default: return value.ToString();
+            }
+        }
+
+        public static bool IsThruthy(object value)
         {
             if (value == null)
             {

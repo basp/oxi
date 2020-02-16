@@ -46,7 +46,7 @@ namespace Oxi
             Token.EqualTo(TokenKind.Less);
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Gt =
-            Token.EqualTo(TokenKind.Less);
+            Token.EqualTo(TokenKind.Greater);
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Ge =
             Token.EqualTo(TokenKind.GreaterEqual);

@@ -39,7 +39,7 @@
                     Console.WriteLine(ast.Accept(printer));
 
                     var val = interpreter.Eval(ast);
-                    Console.WriteLine($"=> {val}");
+                    Console.WriteLine($"=> {Interpreter.Stringify(val)}");
                 }
                 catch (ParseException ex)
                 {
