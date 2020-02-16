@@ -5,9 +5,6 @@ namespace Oxi
 
     public static class TokenParsers
     {
-        // public static readonly TokenListParser<TokenKind, Expr> Identifier =
-        //     Token.EqualTo(TokenKind.Identifier).Select(x => new Expr.)
-
         public static readonly TokenListParser<TokenKind, Expr> True =
             Token.EqualTo(TokenKind.True).Value((Expr)new Expr.Literal(true));
 
@@ -17,41 +14,47 @@ namespace Oxi
         public static readonly TokenListParser<TokenKind, Expr> Nil =
             Token.EqualTo(TokenKind.Nil).Value((Expr)new Expr.Literal(null));
 
-        public static readonly TokenListParser<TokenKind, string> Negate =
-            Token.EqualTo(TokenKind.Minus).Value("-");
+        public static readonly TokenListParser<TokenKind, Operator> Negate =
+            Token.EqualTo(TokenKind.Minus).Value(Operator.Neg);
 
-        public static readonly TokenListParser<TokenKind, string> Not =
-            Token.EqualTo(TokenKind.BangEqual).Value("!");
+        public static readonly TokenListParser<TokenKind, Operator> Not =
+            Token.EqualTo(TokenKind.BangEqual).Value(Operator.Not);
 
-        public static readonly TokenListParser<TokenKind, string> And =
-            Token.EqualTo(TokenKind.And).Value("and");
+        public static readonly TokenListParser<TokenKind, Operator> And =
+            Token.EqualTo(TokenKind.And).Value(Operator.And);
 
-        public static readonly TokenListParser<TokenKind, string> Or =
-            Token.EqualTo(TokenKind.Or).Value("or");
+        public static readonly TokenListParser<TokenKind, Operator> Or =
+            Token.EqualTo(TokenKind.Or).Value(Operator.Or);
 
-        public static readonly TokenListParser<TokenKind, string> Eq =
-            Token.EqualTo(TokenKind.EqualEqual).Value("==");
+        public static readonly TokenListParser<TokenKind, Operator> Eq =
+            Token.EqualTo(TokenKind.EqualEqual).Value(Operator.Eq);
 
-        public static readonly TokenListParser<TokenKind, string> Ne =
-            Token.EqualTo(TokenKind.BangEqual).Value("!=");
+        public static readonly TokenListParser<TokenKind, Operator> Ne =
+            Token.EqualTo(TokenKind.BangEqual).Value(Operator.Ne);
 
-        public static readonly TokenListParser<TokenKind, string> Lt =
-            Token.EqualTo(TokenKind.Less).Value("<");
+        public static readonly TokenListParser<TokenKind, Operator> Lt =
+            Token.EqualTo(TokenKind.Less).Value(Operator.Lt);
 
-        public static readonly TokenListParser<TokenKind, string> Gt =
-            Token.EqualTo(TokenKind.Less).Value(">");
+        public static readonly TokenListParser<TokenKind, Operator> Gt =
+            Token.EqualTo(TokenKind.Less).Value(Operator.Gt);
 
-        public static readonly TokenListParser<TokenKind, string> Add =
-            Token.EqualTo(TokenKind.Plus).Value("+");
+        public static readonly TokenListParser<TokenKind, Operator> Ge =
+            Token.EqualTo(TokenKind.GreaterEqual).Value(Operator.Ge);
 
-        public static readonly TokenListParser<TokenKind, string> Subtract =
-            Token.EqualTo(TokenKind.Minus).Value("-");
+        public static readonly TokenListParser<TokenKind, Operator> Le =
+            Token.EqualTo(TokenKind.LessEqual).Value(Operator.Le);
 
-        public static readonly TokenListParser<TokenKind, string> Multiply =
-            Token.EqualTo(TokenKind.Star).Value("*");
+        public static readonly TokenListParser<TokenKind, Operator> Add =
+            Token.EqualTo(TokenKind.Plus).Value(Operator.Add);
 
-        public static readonly TokenListParser<TokenKind, string> Divide =
-            Token.EqualTo(TokenKind.Slash).Value("/");
+        public static readonly TokenListParser<TokenKind, Operator> Subtract =
+            Token.EqualTo(TokenKind.Minus).Value(Operator.Sub);
+
+        public static readonly TokenListParser<TokenKind, Operator> Multiply =
+            Token.EqualTo(TokenKind.Star).Value(Operator.Mul);
+
+        public static readonly TokenListParser<TokenKind, Operator> Divide =
+            Token.EqualTo(TokenKind.Slash).Value(Operator.Div);
 
         public static readonly TokenListParser<TokenKind, Expr> String =
             Token.EqualTo(TokenKind.String)
@@ -70,7 +73,7 @@ namespace Oxi
 
                     return (Expr)new Expr.Literal(double.Parse(str));
                 });
-                
+
         public static readonly TokenListParser<TokenKind, Expr> Literal =
             String
                 .Or(Number)
@@ -106,10 +109,10 @@ namespace Oxi
 
         public static readonly TokenListParser<TokenKind, Expr> Expr = Disjunction;
 
-        private static Expr MakeBinary(string op, Expr left, Expr right) =>
-            new Expr.Binary(left, op, right);
+        private static Expr MakeBinary(Operator op, Expr left, Expr right) =>
+            new Expr.Binary(left, op.Name, right);
 
-        private static Expr MakeUnary(string op, Expr right) =>
-            new Expr.Unary(op, right);
+        private static Expr MakeUnary(Operator op, Expr right) =>
+            new Expr.Unary(op.Name, right);
     }
 }
