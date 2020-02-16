@@ -5,6 +5,9 @@ namespace Oxi
 
     public static class TokenParsers
     {
+        public static readonly TokenListParser<TokenKind, Expr> Expr =
+            Parse.Ref(() => Disjunction);
+
         public static readonly TokenListParser<TokenKind, Expr> True =
             Token.EqualTo(TokenKind.True).Value((Expr)new Expr.Literal(true));
 
@@ -18,7 +21,7 @@ namespace Oxi
             Token.EqualTo(TokenKind.Minus).Value(Operator.Neg);
 
         public static readonly TokenListParser<TokenKind, Operator> Not =
-            Token.EqualTo(TokenKind.BangEqual).Value(Operator.Not);
+            Token.EqualTo(TokenKind.Bang).Value(Operator.Not);
 
         public static readonly TokenListParser<TokenKind, Operator> And =
             Token.EqualTo(TokenKind.And).Value(Operator.And);
@@ -106,8 +109,6 @@ namespace Oxi
 
         public static readonly TokenListParser<TokenKind, Expr> Disjunction =
             Parse.Chain(Or, Conjunction, MakeBinary);
-
-        public static readonly TokenListParser<TokenKind, Expr> Expr = Disjunction;
 
         private static Expr MakeBinary(Operator op, Expr left, Expr right) =>
             new Expr.Binary(left, op.Name, right);
