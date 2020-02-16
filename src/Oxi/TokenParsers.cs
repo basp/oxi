@@ -9,31 +9,49 @@ namespace Oxi
             Parse.Ref(() => Disjunction);
 
         private static readonly TokenListParser<TokenKind, Expr> True =
-            Token.EqualTo(TokenKind.True).Value((Expr)new Expr.Literal(true));
+            Token
+                .EqualTo(TokenKind.True)
+                .Select(x => (Expr)new Expr.Literal(x, true));
 
         private static readonly TokenListParser<TokenKind, Expr> False =
-            Token.EqualTo(TokenKind.False).Value((Expr)new Expr.Literal(false));
+            Token
+                .EqualTo(TokenKind.False)
+                .Select(x => (Expr)new Expr.Literal(x, false));
 
         private static readonly TokenListParser<TokenKind, Expr> Nil =
-            Token.EqualTo(TokenKind.Nil).Value((Expr)new Expr.Literal(null));
+            Token
+                .EqualTo(TokenKind.Nil)
+                .Select(x => (Expr)new Expr.Literal(x, null));
 
         private static readonly TokenListParser<TokenKind, Operator> Negate =
-            Token.EqualTo(TokenKind.Minus).Value(Operator.Neg);
+            Token
+                .EqualTo(TokenKind.Minus)
+                .Value(Operator.Neg);
 
         private static readonly TokenListParser<TokenKind, Operator> Not =
-            Token.EqualTo(TokenKind.Bang).Value(Operator.Not);
+            Token
+                .EqualTo(TokenKind.Bang)
+                .Value(Operator.Not);
 
         private static readonly TokenListParser<TokenKind, Operator> And =
-            Token.EqualTo(TokenKind.And).Value(Operator.And);
+            Token
+                .EqualTo(TokenKind.And)
+                .Value(Operator.And);
 
         private static readonly TokenListParser<TokenKind, Operator> Or =
-            Token.EqualTo(TokenKind.Or).Value(Operator.Or);
+            Token
+                .EqualTo(TokenKind.Or)
+                .Value(Operator.Or);
 
         private static readonly TokenListParser<TokenKind, Operator> Eq =
-            Token.EqualTo(TokenKind.EqualEqual).Value(Operator.Eq);
+            Token
+                .EqualTo(TokenKind.EqualEqual)
+                .Value(Operator.Eq);
 
         private static readonly TokenListParser<TokenKind, Operator> Ne =
-            Token.EqualTo(TokenKind.BangEqual).Value(Operator.Ne);
+            Token
+                .EqualTo(TokenKind.BangEqual)
+                .Value(Operator.Ne);
 
         private static readonly TokenListParser<TokenKind, Operator> Lt =
             Token.EqualTo(TokenKind.Less).Value(Operator.Lt);
@@ -61,8 +79,8 @@ namespace Oxi
 
         private static readonly TokenListParser<TokenKind, Expr> String =
             Token.EqualTo(TokenKind.String)
-                .Select(x => x.ToStringValue().Trim('"'))
-                .Select(x => (Expr)new Expr.Literal(x));
+                .Select(x => new { tok = x, val = x.ToStringValue().Trim('"') })
+                .Select(x => (Expr)new Expr.Literal(x.tok, x.val));
 
         private static readonly TokenListParser<TokenKind, Expr> Number =
             Token.EqualTo(TokenKind.Number)
@@ -71,10 +89,11 @@ namespace Oxi
                     var str = x.ToStringValue();
                     if (int.TryParse(str, out var i))
                     {
-                        return (Expr)new Expr.Literal(i);
+                        return (Expr)new Expr.Literal(x, i);
                     }
 
-                    return (Expr)new Expr.Literal(double.Parse(str));
+                    var f = double.Parse(str);
+                    return (Expr)new Expr.Literal(x, f);
                 });
 
         private static readonly TokenListParser<TokenKind, Expr> Literal =
@@ -88,7 +107,7 @@ namespace Oxi
             (from lparen in Token.EqualTo(TokenKind.LeftParen)
              from expr in Parse.Ref(() => Expr)
              from rparen in Token.EqualTo(TokenKind.RightParen)
-             select (Expr)new Expr.Grouping(expr)).Or(Literal);
+             select (Expr)new Expr.Grouping(lparen, expr)).Or(Literal);
 
         private static readonly TokenListParser<TokenKind, Expr> Operand =
             (from op in Negate.Or(Not)

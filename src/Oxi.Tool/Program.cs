@@ -19,6 +19,7 @@
                 Args.InvokeAction<Program>(args);
             }
 
+            var interpreter = new Interpreter();
             var scanner = new Scanner();
             while (true)
             {
@@ -32,14 +33,13 @@
                         .ToArray();
 
                     var list = new TokenList<TokenKind>(tokens);
-                    foreach (var tok in list)
-                    {
-                        Console.WriteLine($"{tok.Kind} (line {tok.Position.Line}, column {tok.Position.Column})");
-                    }
+                    var ast = Oxi.TokenParsers.Expr.Parse(list);
 
-                    var res = Oxi.TokenParsers.Expr.Parse(list);
                     var printer = new AstPrinter();
-                    Console.WriteLine(res.Accept(printer));
+                    Console.WriteLine(ast.Accept(printer));
+
+                    var val = interpreter.Eval(ast);
+                    Console.WriteLine($"=> {val}");
                 }
                 catch (ParseException ex)
                 {

@@ -1,6 +1,7 @@
 ﻿namespace Oxi
 {
     using System;
+    using Superpower.Model;
 
     public abstract class Expr
     {
@@ -38,12 +39,15 @@
 
         public class Grouping : Expr
         {
-            public Grouping(Expr expr)
+            public Grouping(Token<TokenKind> tok, Expr expr)
             {
                 this.Expression = expr;
+                this.Token = tok;
             }
 
             public Expr Expression { get; }
+
+            public Token<TokenKind> Token { get; }
 
             public override T Accept<T>(IVisitor<T> visitor) =>
                 visitor.VisitGroupingExpr(this);
@@ -51,12 +55,15 @@
 
         public class Literal : Expr
         {
-            public Literal(object value)
+            public Literal(Token<TokenKind> toke, object value)
             {
                 this.Value = value;
+                this.Token = toke;
             }
 
             public object Value { get; }
+
+            public Token<TokenKind> Token { get; }
 
             public override T Accept<T>(IVisitor<T> visitor) =>
                 visitor.VisitLiteral(this);
