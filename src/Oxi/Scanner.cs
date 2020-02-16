@@ -162,8 +162,10 @@ namespace Oxi
                             compoundOp.Remainder);
 
                         next = compoundOp.Remainder.ConsumeChar();
+                        goto loop;
                     }
-                    else if (next.Value < SimpleOps.Length && SimpleOps[next.Value] != TokenKind.None)
+
+                    if (next.Value < SimpleOps.Length && SimpleOps[next.Value] != TokenKind.None)
                     {
                         yield return Result.Value(
                             SimpleOps[next.Value],
@@ -171,12 +173,11 @@ namespace Oxi
                             next.Remainder);
 
                         next = next.Remainder.ConsumeChar();
+                        goto loop;
                     }
-                    else
-                    {
-                        yield return Result.Empty<TokenKind>(next.Location);
-                        next = next.Remainder.ConsumeChar();
-                    }
+
+                    yield return Result.Empty<TokenKind>(next.Location);
+                    next = next.Remainder.ConsumeChar();
                 }
 
             loop:
