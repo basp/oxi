@@ -1,8 +1,10 @@
 ﻿namespace Oxi.Tool
 {
     using System;
+    using System.Linq;
     using PowerArgs;
     using Superpower;
+    using Superpower.Model;
 
     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
     internal class Program
@@ -24,13 +26,18 @@
                 var src = Console.ReadLine();
                 try
                 {
-                    var tokens = scanner.Tokenize(src);
-                    foreach (var tok in tokens)
+                    var tokens = scanner
+                        .Tokenize(src)
+                        .Where(x => x.Kind != TokenKind.Comment)
+                        .ToArray();
+
+                    var list = new TokenList<TokenKind>(tokens);
+                    foreach (var tok in list)
                     {
                         Console.WriteLine($"{tok.Kind} (line {tok.Position.Line}, column {tok.Position.Column})");
                     }
 
-                    var res = Oxi.TokenParsers.Expr.Parse(tokens);
+                    var res = Oxi.TokenParsers.Expr.Parse(list);
                     var printer = new AstPrinter();
                     Console.WriteLine(res.Accept(printer));
                 }
