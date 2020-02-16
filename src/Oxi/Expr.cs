@@ -16,6 +16,8 @@
             T VisitUnary(Unary expr);
         }
 
+        public abstract Token<TokenKind> Token { get; }
+
         public abstract T Accept<T>(IVisitor<T> visitor);
 
         public class Binary : Expr
@@ -26,6 +28,7 @@
                 string op,
                 Expr right)
             {
+                this.Token = tok;
                 this.Left = left;
                 this.Op = op;
                 this.Right = right;
@@ -37,6 +40,8 @@
 
             public Expr Right { get; }
 
+            public override Token<TokenKind> Token { get; }
+
             public override T Accept<T>(IVisitor<T> visitor) =>
                 visitor.VisitBinaryExpr(this);
         }
@@ -45,13 +50,13 @@
         {
             public Grouping(Token<TokenKind> tok, Expr expr)
             {
-                this.Expression = expr;
                 this.Token = tok;
+                this.Expression = expr;
             }
 
             public Expr Expression { get; }
 
-            public Token<TokenKind> Token { get; }
+            public override Token<TokenKind> Token { get; }
 
             public override T Accept<T>(IVisitor<T> visitor) =>
                 visitor.VisitGroupingExpr(this);
@@ -61,13 +66,13 @@
         {
             public Literal(Token<TokenKind> tok, object value)
             {
-                this.Value = value;
                 this.Token = tok;
+                this.Value = value;
             }
 
             public object Value { get; }
 
-            public Token<TokenKind> Token { get; }
+            public override Token<TokenKind> Token { get; }
 
             public override T Accept<T>(IVisitor<T> visitor) =>
                 visitor.VisitLiteral(this);
@@ -77,6 +82,7 @@
         {
             public Unary(Token<TokenKind> tok, string op, Expr right)
             {
+                this.Token = tok;
                 this.Op = op;
                 this.Right = right;
             }
@@ -84,6 +90,8 @@
             public string Op { get; }
 
             public Expr Right { get; }
+
+            public override Token<TokenKind> Token { get; }
 
             public override T Accept<T>(IVisitor<T> visitor) =>
                 visitor.VisitUnary(this);
