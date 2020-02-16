@@ -10,6 +10,27 @@ namespace Oxi
         private static readonly TokenKind[] SimpleOps =
             new TokenKind[128];
 
+        private static readonly IDictionary<string, TokenKind> Keywords =
+            new Dictionary<string, TokenKind>
+            {
+                ["and"] = TokenKind.And,
+                ["class"] = TokenKind.Class,
+                ["else"] = TokenKind.Else,
+                ["false"] = TokenKind.False,
+                ["for"] = TokenKind.For,
+                ["fun"] = TokenKind.Fun,
+                ["if"] = TokenKind.If,
+                ["nil"] = TokenKind.Nil,
+                ["or"] = TokenKind.Or,
+                ["print"] = TokenKind.Print,
+                ["return"] = TokenKind.Return,
+                ["super"] = TokenKind.Super,
+                ["this"] = TokenKind.This,
+                ["true"] = TokenKind.True,
+                ["var"] = TokenKind.Var,
+                ["while"] = TokenKind.While,
+            };
+
         static Scanner()
         {
             SimpleOps['+'] = TokenKind.Plus;
@@ -49,10 +70,20 @@ namespace Oxi
                 {
                     var id = Identifier.CStyle(next.Location);
                     next = id.Remainder.ConsumeChar();
-                    yield return Result.Value(
-                        TokenKind.Identifier,
-                        id.Location,
-                        id.Remainder);
+                    if (Keywords.TryGetValue(id.Value.ToStringValue(), out var kind))
+                    {
+                        yield return Result.Value(
+                            kind,
+                            id.Location,
+                            id.Remainder);
+                    }
+                    else
+                    {
+                        yield return Result.Value(
+                            TokenKind.Identifier,
+                            id.Location,
+                            id.Remainder);
+                    }
                 }
                 else if (char.IsDigit(next.Value))
                 {

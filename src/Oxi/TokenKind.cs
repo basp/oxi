@@ -38,11 +38,21 @@ namespace Oxi
         Number,
 
         // keywords
-        Function,
-        Let,
         And,
-        Or,
-        True,
+        Class,
+        Else,
         False,
+        For,
+        Fun,
+        If,
+        Nil,
+        Or,
+        Print,
+        Return,
+        Super,
+        This,
+        True,
+        Var,
+        While,
     }
 }
