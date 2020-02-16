@@ -1,12 +1,28 @@
 namespace Oxi
 {
+    using System;
+
     public class Interpreter : Expr.IVisitor<object>
     {
         public object Eval(Expr expr) => expr.Accept(this);
 
         public object VisitBinaryExpr(Expr.Binary expr)
         {
-            throw new System.NotImplementedException();
+            var left = this.Eval(expr.Left);
+            var right = this.Eval(expr.Right);
+            switch (expr.Op)
+            {
+                case "-":
+                    return (double)left - (double)right;
+                case "/":
+                    return (double)left / (double)right;
+                case "*":
+                    return (double)left * (double)right;
+                case "+":
+                    return (double)left + (double)right;
+            }
+
+            throw new NotImplementedException();
         }
 
         public object VisitGroupingExpr(Expr.Grouping expr) =>

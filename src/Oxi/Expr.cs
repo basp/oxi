@@ -20,7 +20,11 @@
 
         public class Binary : Expr
         {
-            public Binary(Expr left, string op, Expr right)
+            public Binary(
+                Token<TokenKind> tok,
+                Expr left,
+                string op,
+                Expr right)
             {
                 this.Left = left;
                 this.Op = op;
@@ -55,10 +59,10 @@
 
         public class Literal : Expr
         {
-            public Literal(Token<TokenKind> toke, object value)
+            public Literal(Token<TokenKind> tok, object value)
             {
                 this.Value = value;
-                this.Token = toke;
+                this.Token = tok;
             }
 
             public object Value { get; }
@@ -71,7 +75,7 @@
 
         public class Unary : Expr
         {
-            public Unary(string op, Expr right)
+            public Unary(Token<TokenKind> tok, string op, Expr right)
             {
                 this.Op = op;
                 this.Right = right;
