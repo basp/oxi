@@ -2,6 +2,7 @@
 {
     using System;
     using PowerArgs;
+    using Superpower;
 
     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
     internal class Program
@@ -21,10 +22,17 @@
             {
                 Console.Write("> ");
                 var src = Console.ReadLine();
-                var tokens = scanner.Tokenize(src);
-                foreach (var tok in tokens)
+                try
                 {
-                    Console.WriteLine($"{tok.Kind} (line {tok.Position.Line}, column {tok.Position.Column})");
+                    var tokens = scanner.Tokenize(src);
+                    foreach (var tok in tokens)
+                    {
+                        Console.WriteLine($"{tok.Kind} (line {tok.Position.Line}, column {tok.Position.Column})");
+                    }
+                }
+                catch (ParseException ex)
+                {
+                    Console.WriteLine(ex.Message);
                 }
             }
         }

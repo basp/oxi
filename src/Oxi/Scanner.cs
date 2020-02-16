@@ -110,7 +110,8 @@ namespace Oxi
                 }
                 else if (next.Value == '/')
                 {
-                    var comment = Comment.CPlusPlusStyle(next.Location);
+                    Result<TextSpan> comment;
+                    comment = Comment.CPlusPlusStyle(next.Location);
                     if (comment.HasValue)
                     {
                         yield return Result.Value(
@@ -119,16 +120,27 @@ namespace Oxi
                             comment.Remainder);
 
                         next = comment.Remainder.ConsumeChar();
+                        goto loop;
                     }
-                    else
+
+                    comment = Comment.CStyle(next.Location);
+                    if (comment.HasValue)
                     {
                         yield return Result.Value(
-                            SimpleOps[next.Value],
-                            next.Location,
-                            next.Remainder);
+                            TokenKind.Comment,
+                            comment.Location,
+                            comment.Remainder);
 
-                        next = next.Remainder.ConsumeChar();
+                        next = comment.Remainder.ConsumeChar();
+                        goto loop;
                     }
+
+                    yield return Result.Value(
+                        SimpleOps[next.Value],
+                        next.Location,
+                        next.Remainder);
+
+                    next = next.Remainder.ConsumeChar();
                 }
                 else if (next.Value == '#')
                 {
@@ -167,6 +179,7 @@ namespace Oxi
                     }
                 }
 
+            loop:
                 next = SkipWhiteSpace(next.Location);
             }
             while (next.HasValue);
