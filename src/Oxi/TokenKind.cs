@@ -3,8 +3,7 @@ namespace Oxi
     public enum TokenKind
     {
         None,
-        Illegal,
-        EOF,
+        Comment,
 
         // one character tokens
         LeftParen,

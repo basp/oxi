@@ -83,7 +83,7 @@ namespace Oxi
                     if (comment.HasValue)
                     {
                         yield return Result.Value(
-                            TokenKind.None,
+                            TokenKind.Comment,
                             comment.Location,
                             comment.Remainder);
 
@@ -104,7 +104,7 @@ namespace Oxi
                     var comment = Comment.ShellStyle(next.Location);
                     next = comment.Remainder.ConsumeChar();
                     yield return Result.Value(
-                        TokenKind.None,
+                        TokenKind.Comment,
                         comment.Location,
                         comment.Remainder);
                 }
