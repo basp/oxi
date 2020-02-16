@@ -3,6 +3,7 @@ namespace Oxi
     public enum TokenKind
     {
         None,
+        Illegal,
         EOF,
 
         // one character tokens
@@ -35,25 +36,14 @@ namespace Oxi
         // literals
         Identifier,
         String,
-        Int,
-        Float,
+        Number,
 
         // keywords
+        Function,
+        Let,
         And,
-        Class,
-        Else,
-        False,
-        Fun,
-        For,
-        If,
-        Nil,
         Or,
-        Print,
-        Return,
-        Super,
-        This,
         True,
-        Var,
-        While,
+        False,
     }
 }

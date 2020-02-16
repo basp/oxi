@@ -1,6 +1,5 @@
 namespace Oxi.Tests
 {
-    using System;
     using Xunit;
 
     public class LexerTest
@@ -8,7 +7,6 @@ namespace Oxi.Tests
         [Fact]
         public void Test1()
         {
-
         }
     }
 }
