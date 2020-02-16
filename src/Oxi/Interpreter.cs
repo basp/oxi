@@ -12,6 +12,10 @@ namespace Oxi
             var right = this.Eval(expr.Right);
             switch (expr.Op)
             {
+                case "==":
+                    return AreEqual(left, right);
+                case "!=":
+                    return !AreEqual(left, right);
                 case "-":
                     return (double)left - (double)right;
                 case "/":
@@ -80,6 +84,21 @@ namespace Oxi
                 case double x: return x.ToString();
                 default: return value.ToString();
             }
+        }
+
+        public static bool AreEqual(object a, object b)
+        {
+            if (a == null && b == null)
+            {
+                return true;
+            }
+
+            if (a == null)
+            {
+                return false;
+            }
+
+            return a.Equals(b);
         }
 
         public static bool IsThruthy(object value)
