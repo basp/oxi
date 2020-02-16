@@ -27,6 +27,7 @@ namespace Oxi
         {
             var buf = new StringBuilder();
             buf.Append("(");
+            buf.Append(name);
             foreach (var expr in exprs)
             {
                 buf.Append(" ");

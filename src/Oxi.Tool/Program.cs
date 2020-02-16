@@ -29,6 +29,10 @@
                     {
                         Console.WriteLine($"{tok.Kind} (line {tok.Position.Line}, column {tok.Position.Column})");
                     }
+
+                    var res = Oxi.TokenParsers.Expr.Parse(tokens);
+                    var printer = new AstPrinter();
+                    Console.WriteLine(res.Accept(printer));
                 }
                 catch (ParseException ex)
                 {
