@@ -24,7 +24,7 @@ namespace Oxi
                 .EqualTo(TokenKind.Nil)
                 .Select(x => (Expr)new Expr.Literal(x, null));
 
-        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Negate =
+        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Neg =
             Token.EqualTo(TokenKind.Minus);
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Not =
@@ -57,13 +57,13 @@ namespace Oxi
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Add =
             Token.EqualTo(TokenKind.Plus);
 
-        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Subtract =
+        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Sub =
             Token.EqualTo(TokenKind.Minus);
 
-        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Multiply =
+        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Mul =
             Token.EqualTo(TokenKind.Star);
 
-        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Divide =
+        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Div =
             Token.EqualTo(TokenKind.Slash);
 
         private static readonly TokenListParser<TokenKind, Expr> String =
@@ -94,15 +94,15 @@ namespace Oxi
              select (Expr)new Expr.Grouping(lparen, expr)).Or(Literal);
 
         private static readonly TokenListParser<TokenKind, Expr> Operand =
-            (from op in Negate.Or(Not)
+            (from op in Neg.Or(Not)
              from factor in Factor
              select MakeUnary(op, factor)).Or(Factor).Named("expression");
 
         private static readonly TokenListParser<TokenKind, Expr> Term =
-            Parse.Chain(Multiply.Or(Divide), Operand, MakeBinary);
+            Parse.Chain(Mul.Or(Div), Operand, MakeBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Comparand =
-            Parse.Chain(Add.Or(Subtract), Term, MakeBinary);
+            Parse.Chain(Add.Or(Sub), Term, MakeBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Comparison =
             Parse.Chain(Lt.Or(Ne).Or(Gt).Or(Eq), Comparand, MakeBinary);

@@ -1,189 +1,49 @@
 namespace Oxi
 {
-    using System.Collections.Generic;
     using Superpower;
     using Superpower.Model;
     using Superpower.Parsers;
+    using Superpower.Tokenizers;
 
-    public class Scanner : Tokenizer<TokenKind>
+    public class Scanner
     {
-        private static readonly TokenKind[] SimpleOps =
-            new TokenKind[128];
+        private static readonly Tokenizer<TokenKind> Tokenizer =
+            new TokenizerBuilder<TokenKind>()
+                .Ignore(Span.WhiteSpace)
+                .Match(Span.EqualTo("=="), TokenKind.EqualEqual)
+                .Match(Span.EqualTo("!="), TokenKind.BangEqual)
+                .Match(Span.EqualTo("<="), TokenKind.LessEqual)
+                .Match(Span.EqualTo(">="), TokenKind.GreaterEqual)
+                .Match(Character.EqualTo('='), TokenKind.Equal)
+                .Match(Character.EqualTo('+'), TokenKind.Plus)
+                .Match(Character.EqualTo('-'), TokenKind.Minus)
+                .Match(Character.EqualTo('!'), TokenKind.Bang)
+                .Match(Character.EqualTo('/'), TokenKind.Slash)
+                .Match(Character.EqualTo('*'), TokenKind.Star)
+                .Match(Character.EqualTo('<'), TokenKind.Less)
+                .Match(Character.EqualTo('>'), TokenKind.Greater)
+                .Match(Character.EqualTo(';'), TokenKind.Semicolon)
+                .Match(Character.EqualTo(','), TokenKind.Comma)
+                .Match(Character.EqualTo('('), TokenKind.LeftParen)
+                .Match(Character.EqualTo(')'), TokenKind.RightParen)
+                .Match(Character.EqualTo('{'), TokenKind.LeftBrace)
+                .Match(Character.EqualTo('}'), TokenKind.RightBrace)
+                .Match(Span.EqualTo("print"), TokenKind.Print)
+                .Match(Span.EqualTo("let"), TokenKind.Var)
+                .Match(Span.EqualTo("true"), TokenKind.True)
+                .Match(Span.EqualTo("false"), TokenKind.False)
+                .Match(Span.EqualTo("nil"), TokenKind.Nil)
+                .Match(Span.EqualTo("if"), TokenKind.If)
+                .Match(Span.EqualTo("else"), TokenKind.Else)
+                .Match(Span.EqualTo("return"), TokenKind.Return)
+                .Match(Span.EqualTo("and"), TokenKind.And)
+                .Match(Span.EqualTo("or"), TokenKind.Or)
+                .Match(Numerics.Decimal, TokenKind.Number)
+                .Match(QuotedString.CStyle, TokenKind.String)
+                .Match(Identifier.CStyle, TokenKind.Identifier)
+                .Build();
 
-        private static readonly IDictionary<string, TokenKind> Keywords =
-            new Dictionary<string, TokenKind>
-            {
-                ["and"] = TokenKind.And,
-                ["class"] = TokenKind.Class,
-                ["else"] = TokenKind.Else,
-                ["false"] = TokenKind.False,
-                ["for"] = TokenKind.For,
-                ["fun"] = TokenKind.Fun,
-                ["if"] = TokenKind.If,
-                ["nil"] = TokenKind.Nil,
-                ["or"] = TokenKind.Or,
-                ["print"] = TokenKind.Print,
-                ["return"] = TokenKind.Return,
-                ["super"] = TokenKind.Super,
-                ["this"] = TokenKind.This,
-                ["true"] = TokenKind.True,
-                ["var"] = TokenKind.Var,
-                ["while"] = TokenKind.While,
-            };
-
-        static Scanner()
-        {
-            SimpleOps['+'] = TokenKind.Plus;
-            SimpleOps['-'] = TokenKind.Minus;
-            SimpleOps['*'] = TokenKind.Star;
-            SimpleOps['/'] = TokenKind.Slash;
-            SimpleOps['<'] = TokenKind.Less;
-            SimpleOps['>'] = TokenKind.Greater;
-            SimpleOps['='] = TokenKind.Equal;
-            SimpleOps[','] = TokenKind.Comma;
-            SimpleOps['.'] = TokenKind.Dot;
-            SimpleOps[':'] = TokenKind.Colon;
-            SimpleOps[';'] = TokenKind.Semicolon;
-            SimpleOps['('] = TokenKind.LeftParen;
-            SimpleOps[')'] = TokenKind.RightParen;
-            SimpleOps['['] = TokenKind.LeftBrack;
-            SimpleOps[']'] = TokenKind.RightBrack;
-            SimpleOps['{'] = TokenKind.LeftBrace;
-            SimpleOps['}'] = TokenKind.RightBrace;
-            SimpleOps['!'] = TokenKind.Bang;
-            SimpleOps['?'] = TokenKind.Question;
-        }
-
-        protected override IEnumerable<Result<TokenKind>> Tokenize(
-            TextSpan span,
-            TokenizationState<TokenKind> state)
-        {
-            var next = SkipWhiteSpace(span);
-            if (!next.HasValue)
-            {
-                yield break;
-            }
-
-            do
-            {
-                if (char.IsLetter(next.Value) || next.Value == '_')
-                {
-                    var id = Identifier.CStyle(next.Location);
-                    next = id.Remainder.ConsumeChar();
-                    if (Keywords.TryGetValue(id.Value.ToStringValue(), out var kind))
-                    {
-                        yield return Result.Value(
-                            kind,
-                            id.Location,
-                            id.Remainder);
-                    }
-                    else
-                    {
-                        yield return Result.Value(
-                            TokenKind.Identifier,
-                            id.Location,
-                            id.Remainder);
-                    }
-                }
-                else if (char.IsDigit(next.Value))
-                {
-                    var num = Numerics.Decimal(next.Location);
-                    next = num.Remainder.ConsumeChar();
-                    yield return Result.Value(
-                        TokenKind.Number,
-                        num.Location,
-                        num.Remainder);
-                }
-                else if (next.Value == '"')
-                {
-                    var str = QuotedString.CStyle(next.Location);
-                    if (!str.HasValue)
-                    {
-                        yield return Result.CastEmpty<string, TokenKind>(str);
-                    }
-
-                    next = str.Remainder.ConsumeChar();
-                    yield return Result.Value(
-                        TokenKind.String,
-                        str.Location,
-                        str.Remainder);
-                }
-                else if (next.Value == '/')
-                {
-                    Result<TextSpan> comment;
-                    comment = Comment.CPlusPlusStyle(next.Location);
-                    if (comment.HasValue)
-                    {
-                        yield return Result.Value(
-                            TokenKind.Comment,
-                            comment.Location,
-                            comment.Remainder);
-
-                        next = comment.Remainder.ConsumeChar();
-                        goto loop;
-                    }
-
-                    comment = Comment.CStyle(next.Location);
-                    if (comment.HasValue)
-                    {
-                        yield return Result.Value(
-                            TokenKind.Comment,
-                            comment.Location,
-                            comment.Remainder);
-
-                        next = comment.Remainder.ConsumeChar();
-                        goto loop;
-                    }
-
-                    yield return Result.Value(
-                        SimpleOps[next.Value],
-                        next.Location,
-                        next.Remainder);
-
-                    next = next.Remainder.ConsumeChar();
-                }
-                else if (next.Value == '#')
-                {
-                    var comment = Comment.ShellStyle(next.Location);
-                    next = comment.Remainder.ConsumeChar();
-                    yield return Result.Value(
-                        TokenKind.Comment,
-                        comment.Location,
-                        comment.Remainder);
-                }
-                else
-                {
-                    var compoundOp = TextParsers.CompoundOperator(next.Location);
-                    if (compoundOp.HasValue)
-                    {
-                        yield return Result.Value(
-                            compoundOp.Value,
-                            compoundOp.Location,
-                            compoundOp.Remainder);
-
-                        next = compoundOp.Remainder.ConsumeChar();
-                        goto loop;
-                    }
-
-                    if (next.Value < SimpleOps.Length && SimpleOps[next.Value] != TokenKind.None)
-                    {
-                        yield return Result.Value(
-                            SimpleOps[next.Value],
-                            next.Location,
-                            next.Remainder);
-
-                        next = next.Remainder.ConsumeChar();
-                        goto loop;
-                    }
-
-                    yield return Result.Empty<TokenKind>(next.Location);
-                    next = next.Remainder.ConsumeChar();
-                }
-
-            loop:
-                next = SkipWhiteSpace(next.Location);
-            }
-            while (next.HasValue);
-        }
+        public TokenList<TokenKind> Tokenize(string source) =>
+            Tokenizer.Tokenize(source);
     }
 }
