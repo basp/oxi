@@ -13,12 +13,12 @@ namespace Oxi
         private static readonly TokenListParser<TokenKind, Expr> True =
             Token
                 .EqualTo(TokenKind.True)
-                .Select(x => (Expr)new Expr.BooleanLiteral(x, true));
+                .Select(x => CreateBooleanLiteral(x, true));
 
         private static readonly TokenListParser<TokenKind, Expr> False =
             Token
                 .EqualTo(TokenKind.False)
-                .Select(x => (Expr)new Expr.BooleanLiteral(x, false));
+                .Select(x => CreateBooleanLiteral(x, false));
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Negate =
             Token.EqualTo(TokenKind.Minus);
@@ -122,16 +122,16 @@ namespace Oxi
             Parse.Chain(Or, Conjunction, CreateBinary);
 
         private static Expr CreateIntegerLiteral(Token<TokenKind> tok, int value) =>
-            new Expr.IntegerLiteral(tok, value);
+            new Expr.Literal(tok, new Value.Integer(value));
 
         private static Expr CreateFloatLiteral(Token<TokenKind> tok, double value) =>
-            new Expr.FloatLiteral(tok, value);
+            new Expr.Literal(tok, new Value.Float(value));
 
         private static Expr CreateStringLiteral(Token<TokenKind> tok, string value) =>
-            new Expr.StringLiteral(tok, value);
+            new Expr.Literal(tok, new Value.String(value));
 
         private static Expr CreateBooleanLiteral(Token<TokenKind> tok, bool value) =>
-            new Expr.BooleanLiteral(tok, value);
+            new Expr.Literal(tok, new Value.Boolean(value));
 
         private static Expr CreateBinary(Token<TokenKind> op, Expr left, Expr right) =>
             new Expr.Binary(op, left, op.ToStringValue(), right);

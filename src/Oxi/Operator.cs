@@ -1,7 +1,5 @@
 namespace Oxi
 {
-    using System;
-
     public class Operator
     {
         public static readonly Operator Not = new Operator("!");

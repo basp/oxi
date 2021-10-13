@@ -2,9 +2,9 @@ namespace Oxi
 {
     using System;
 
-    public class Interpreter : Expr.IVisitor<object>
+    public class Interpreter : Expr.IVisitor<IValue>
     {
-        public static string Stringify(object value)
+        public static string Stringify(IValue value)
         {
             if (value == null)
             {
@@ -13,11 +13,11 @@ namespace Oxi
 
             switch (value)
             {
-                case bool x: 
-                    return x.ToString(Config.CultureInfo).ToLower();
-                case double x: 
-                    return x.ToString(Config.CultureInfo);
-                default: 
+                case Value.Boolean x:
+                    return x.Value.ToString(Config.CultureInfo).ToLower();
+                case Value.Float x:
+                    return x.Value.ToString(Config.CultureInfo);
+                default:
                     return value.ToString();
             }
         }
@@ -52,21 +52,9 @@ namespace Oxi
             return true;
         }
 
-        public object Eval(Expr expr) => expr.Accept(this);
+        public IValue Eval(Expr expr) => expr.Accept(this);
 
-        public object VisitStringLiteral(Expr.StringLiteral expr) =>
-            expr.Value;
-
-        public object VisitIntegerLiteral(Expr.IntegerLiteral expr) =>
-            expr.Value;
-
-        public object VisitFloatLiteral(Expr.FloatLiteral expr) =>
-            expr.Value;
-
-        public object VisitBooleanLiteral(Expr.BooleanLiteral expr) =>
-            expr.Value;
-
-        public object VisitBinaryExpr(Expr.Binary expr)
+        public IValue VisitBinaryExpr(Expr.Binary expr)
         {
             var left = this.Eval(expr.Left);
             var right = this.Eval(expr.Right);
@@ -74,64 +62,47 @@ namespace Oxi
             switch (expr.Op)
             {
                 case "==":
-                    return AreEqual(left, right);
+                    return new Value.Boolean(AreEqual(left, right));
                 case "!=":
-                    return !AreEqual(left, right);
+                    return new Value.Boolean(!AreEqual(left, right));
                 case "-":
-                    return (double)left - (double)right;
+                    throw new NotImplementedException();
                 case "/":
-                    return (double)left / (double)right;
+                    throw new NotImplementedException();
                 case "*":
-                    return (double)left * (double)right;
+                    throw new NotImplementedException();
                 case "<":
-                    return (double)left < (double)right;
+                    throw new NotImplementedException();
                 case ">":
-                    return (double)left > (double)right;
+                    throw new NotImplementedException();
                 case "<=":
-                    return (double)left <= (double)right;
+                    throw new NotImplementedException();
                 case ">=":
-                    return (double)left >= (double)right;
+                    throw new NotImplementedException();
                 case "+":
-                    if (left is string || right is string)
-                    {
-                        return string.Concat(
-                            Stringify(left),
-                            Stringify(right));
-                    }
-
-                    if (left is double || right is double)
-                    {
-                        return
-                            Convert.ToDouble(left) +
-                            Convert.ToDouble(right);
-                    }
-
-                    if (left is int && right is int)
-                    {
-                        return (int)left + (int)right;
-                    }
-
                     throw new NotImplementedException();
             }
 
             throw new NotImplementedException();
         }
 
-        public object VisitGroupingExpr(Expr.Grouping expr) =>
+        public IValue VisitGroupingExpr(Expr.Grouping expr) =>
             this.Eval(expr.Expression);
 
-        public object VisitUnary(Expr.Unary expr)
+        public IValue VisitUnary(Expr.Unary expr)
         {
             var right = this.Eval(expr.Right);
             switch (expr.Op)
             {
                 case "!":
-                    return !IsThruthy(right);
+                    return new Value.Boolean(!IsThruthy(right));
                 case "-":
-                    return -(double)right;
+                    throw new NotImplementedException();
             }
 
-            return null;
+            throw new NotImplementedException();
         }
+
+        public IValue VisitLiteral(Expr.Literal expr) => expr.Value;
     }
 }
