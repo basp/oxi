@@ -10,15 +10,17 @@ namespace Oxi
         public string VisitGroupingExpr(Expr.Grouping expr) =>
             this.Parenthesize("group", expr.Expression);
 
-        public string VisitLiteral(Expr.Literal expr)
-        {
-            if (expr.Value == null)
-            {
-                return "nil";
-            }
+        public string VisitIntegerLiteral(Expr.IntegerLiteral expr) =>
+            expr.Value.ToString();
 
-            return expr.Value.ToString();
-        }
+        public string VisitFloatLiteral(Expr.FloatLiteral expr) =>
+            expr.Value.ToString(Config.CultureInfo);
+
+        public string VisitStringLiteral(Expr.StringLiteral expr) =>
+            $"\"{expr.Value}\"";
+
+        public string VisitBooleanLiteral(Expr.BooleanLiteral expr) =>
+            expr.Value.ToString(Config.CultureInfo);
 
         public string VisitUnary(Expr.Unary expr) =>
             this.Parenthesize(expr.Op, expr.Right);

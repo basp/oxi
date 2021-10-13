@@ -13,21 +13,24 @@ namespace Oxi
         private static readonly IDictionary<string, TokenKind> Keywords =
             new Dictionary<string, TokenKind>
             {
-                ["and"] = TokenKind.And,
-                ["class"] = TokenKind.Class,
+                ["ANY"] = TokenKind.Any,
+                ["break"] = TokenKind.Break,
+                ["continue"] = TokenKind.Continue,
                 ["else"] = TokenKind.Else,
+                ["elseif"] = TokenKind.ElseIf,
+                ["endfor"] = TokenKind.EndFor,
+                ["endfork"] = TokenKind.EndFork,
+                ["endif"] = TokenKind.EndIf,
+                ["endtry"] = TokenKind.EndTry,
+                ["endwhile"] = TokenKind.EndWhile,
                 ["false"] = TokenKind.False,
                 ["for"] = TokenKind.For,
-                ["fun"] = TokenKind.Fun,
+                ["fork"] = TokenKind.Fork,
                 ["if"] = TokenKind.If,
-                ["nil"] = TokenKind.Nil,
-                ["or"] = TokenKind.Or,
-                ["print"] = TokenKind.Print,
+                ["in"] = TokenKind.In,
                 ["return"] = TokenKind.Return,
-                ["super"] = TokenKind.Super,
-                ["this"] = TokenKind.This,
                 ["true"] = TokenKind.True,
-                ["var"] = TokenKind.Var,
+                ["try"] = TokenKind.Try,
                 ["while"] = TokenKind.While,
             };
 
@@ -46,12 +49,14 @@ namespace Oxi
             SimpleOps[';'] = TokenKind.Semicolon;
             SimpleOps['('] = TokenKind.LeftParen;
             SimpleOps[')'] = TokenKind.RightParen;
-            SimpleOps['['] = TokenKind.LeftBrack;
-            SimpleOps[']'] = TokenKind.RightBrack;
+            SimpleOps['['] = TokenKind.LeftBracket;
+            SimpleOps[']'] = TokenKind.RightBracket;
             SimpleOps['{'] = TokenKind.LeftBrace;
             SimpleOps['}'] = TokenKind.RightBrace;
             SimpleOps['!'] = TokenKind.Bang;
             SimpleOps['?'] = TokenKind.Question;
+            SimpleOps['$'] = TokenKind.Dollar;
+            SimpleOps['#'] = TokenKind.Pound;
         }
 
         protected override IEnumerable<Result<TokenKind>> Tokenize(
@@ -66,7 +71,7 @@ namespace Oxi
 
             do
             {
-                if (char.IsLetter(next.Value) || next.Value == '_')
+                if (IsIdentifierStartCharacter(next.Value))
                 {
                     var id = Identifier.CStyle(next.Location);
                     next = id.Remainder.ConsumeChar();
@@ -88,9 +93,13 @@ namespace Oxi
                 else if (char.IsDigit(next.Value))
                 {
                     var num = Numerics.Decimal(next.Location);
+                    var kind = int.TryParse(num.Value.ToStringValue(), out var _)
+                        ? TokenKind.Integer
+                        : TokenKind.Float;
+
                     next = num.Remainder.ConsumeChar();
                     yield return Result.Value(
-                        TokenKind.Number,
+                        kind,
                         num.Location,
                         num.Remainder);
                 }
@@ -111,6 +120,7 @@ namespace Oxi
                 else if (next.Value == '/')
                 {
                     Result<TextSpan> comment;
+
                     comment = Comment.CPlusPlusStyle(next.Location);
                     if (comment.HasValue)
                     {
@@ -120,7 +130,7 @@ namespace Oxi
                             comment.Remainder);
 
                         next = comment.Remainder.ConsumeChar();
-                        goto loop;
+                        goto done;
                     }
 
                     comment = Comment.CStyle(next.Location);
@@ -132,7 +142,7 @@ namespace Oxi
                             comment.Remainder);
 
                         next = comment.Remainder.ConsumeChar();
-                        goto loop;
+                        goto done;
                     }
 
                     yield return Result.Value(
@@ -162,7 +172,7 @@ namespace Oxi
                             compoundOp.Remainder);
 
                         next = compoundOp.Remainder.ConsumeChar();
-                        goto loop;
+                        goto done;
                     }
 
                     if (next.Value < SimpleOps.Length && SimpleOps[next.Value] != TokenKind.None)
@@ -173,17 +183,20 @@ namespace Oxi
                             next.Remainder);
 
                         next = next.Remainder.ConsumeChar();
-                        goto loop;
+                        goto done;
                     }
 
                     yield return Result.Empty<TokenKind>(next.Location);
                     next = next.Remainder.ConsumeChar();
                 }
 
-            loop:
+            done:
                 next = SkipWhiteSpace(next.Location);
             }
             while (next.HasValue);
         }
+
+        private static bool IsIdentifierStartCharacter(char c) =>
+            c == '_' || char.IsLetter(c);
     }
 }

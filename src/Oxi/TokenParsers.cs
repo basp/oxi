@@ -1,5 +1,6 @@
 namespace Oxi
 {
+    using System.Globalization;
     using Superpower;
     using Superpower.Model;
     using Superpower.Parsers;
@@ -12,29 +13,27 @@ namespace Oxi
         private static readonly TokenListParser<TokenKind, Expr> True =
             Token
                 .EqualTo(TokenKind.True)
-                .Select(x => (Expr)new Expr.Literal(x, true));
+                .Select(x => (Expr)new Expr.BooleanLiteral(x, true));
 
         private static readonly TokenListParser<TokenKind, Expr> False =
             Token
                 .EqualTo(TokenKind.False)
-                .Select(x => (Expr)new Expr.Literal(x, false));
-
-        private static readonly TokenListParser<TokenKind, Expr> Nil =
-            Token
-                .EqualTo(TokenKind.Nil)
-                .Select(x => (Expr)new Expr.Literal(x, null));
+                .Select(x => (Expr)new Expr.BooleanLiteral(x, false));
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Negate =
             Token.EqualTo(TokenKind.Minus);
+
+        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Arrow =
+            Token.EqualTo(TokenKind.EqualGreater);
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Not =
             Token.EqualTo(TokenKind.Bang);
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> And =
-            Token.EqualTo(TokenKind.And);
+            Token.EqualTo(TokenKind.AmpersandAmpersand);
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Or =
-            Token.EqualTo(TokenKind.Or);
+            Token.EqualTo(TokenKind.BarBar);
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Eq =
             Token.EqualTo(TokenKind.EqualEqual);
@@ -69,23 +68,32 @@ namespace Oxi
         private static readonly TokenListParser<TokenKind, Expr> String =
             Token.EqualTo(TokenKind.String)
                 .Select(x => new { tok = x, val = x.ToStringValue().Trim('"') })
-                .Select(x => (Expr)new Expr.Literal(x.tok, x.val));
+                .Select(x => CreateStringLiteral(x.tok, x.val));
 
-        private static readonly TokenListParser<TokenKind, Expr> Number =
-            Token.EqualTo(TokenKind.Number)
-                .Select(x =>
+        private static readonly TokenListParser<TokenKind, Expr> Integer =
+            Token.EqualTo(TokenKind.Integer)
+                .Select(tok =>
                 {
-                    var str = x.ToStringValue();
-                    var f = double.Parse(str);
-                    return (Expr)new Expr.Literal(x, f);
+                    var str = tok.ToStringValue();
+                    var i = int.Parse(str, Config.CultureInfo);
+                    return CreateIntegerLiteral(tok, i);
+                });
+
+        private static readonly TokenListParser<TokenKind, Expr> Float =
+            Token.EqualTo(TokenKind.Float)
+                .Select(tok =>
+                {
+                    var str = tok.ToStringValue();
+                    var f = double.Parse(str, Config.CultureInfo);
+                    return CreateFloatLiteral(tok, f);
                 });
 
         private static readonly TokenListParser<TokenKind, Expr> Literal =
             String
-                .Or(Number)
+                .Or(Integer)
+                .Or(Float)
                 .Or(True)
-                .Or(False)
-                .Or(Nil);
+                .Or(False);
 
         private static readonly TokenListParser<TokenKind, Expr> Factor =
             (from lparen in Token.EqualTo(TokenKind.LeftParen)
@@ -96,27 +104,39 @@ namespace Oxi
         private static readonly TokenListParser<TokenKind, Expr> Operand =
             (from op in Negate.Or(Not)
              from factor in Factor
-             select MakeUnary(op, factor)).Or(Factor).Named("expression");
+             select CreateUnary(op, factor)).Or(Factor).Named("expression");
 
         private static readonly TokenListParser<TokenKind, Expr> Term =
-            Parse.Chain(Multiply.Or(Divide), Operand, MakeBinary);
+            Parse.Chain(Multiply.Or(Divide), Operand, CreateBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Comparand =
-            Parse.Chain(Add.Or(Subtract), Term, MakeBinary);
+            Parse.Chain(Add.Or(Subtract), Term, CreateBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Comparison =
-            Parse.Chain(Lt.Or(Ne).Or(Gt).Or(Eq), Comparand, MakeBinary);
+            Parse.Chain(Lt.Or(Ne).Or(Gt).Or(Eq), Comparand, CreateBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Conjunction =
-            Parse.Chain(And, Comparison, MakeBinary);
+            Parse.Chain(And, Comparison, CreateBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Disjunction =
-            Parse.Chain(Or, Conjunction, MakeBinary);
+            Parse.Chain(Or, Conjunction, CreateBinary);
 
-        private static Expr MakeBinary(Token<TokenKind> op, Expr left, Expr right) =>
+        private static Expr CreateIntegerLiteral(Token<TokenKind> tok, int value) =>
+            new Expr.IntegerLiteral(tok, value);
+
+        private static Expr CreateFloatLiteral(Token<TokenKind> tok, double value) =>
+            new Expr.FloatLiteral(tok, value);
+
+        private static Expr CreateStringLiteral(Token<TokenKind> tok, string value) =>
+            new Expr.StringLiteral(tok, value);
+
+        private static Expr CreateBooleanLiteral(Token<TokenKind> tok, bool value) =>
+            new Expr.BooleanLiteral(tok, value);
+
+        private static Expr CreateBinary(Token<TokenKind> op, Expr left, Expr right) =>
             new Expr.Binary(op, left, op.ToStringValue(), right);
 
-        private static Expr MakeUnary(Token<TokenKind> op, Expr right) =>
+        private static Expr CreateUnary(Token<TokenKind> op, Expr right) =>
             new Expr.Unary(op, op.ToStringValue(), right);
     }
 }

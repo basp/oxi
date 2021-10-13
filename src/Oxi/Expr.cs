@@ -11,7 +11,13 @@
 
             T VisitGroupingExpr(Grouping expr);
 
-            T VisitLiteral(Literal expr);
+            T VisitStringLiteral(StringLiteral expr);
+
+            T VisitIntegerLiteral(IntegerLiteral expr);
+
+            T VisitFloatLiteral(FloatLiteral expr);
+
+            T VisitBooleanLiteral(BooleanLiteral expr);
 
             T VisitUnary(Unary expr);
         }
@@ -62,20 +68,61 @@
                 visitor.VisitGroupingExpr(this);
         }
 
-        public class Literal : Expr
+        public abstract class Literal<T> : Expr
         {
-            public Literal(Token<TokenKind> tok, object value)
+            protected Literal(Token<TokenKind> tok, T value)
             {
                 this.Token = tok;
                 this.Value = value;
             }
 
-            public object Value { get; }
+            public T Value { get; }
 
             public override Token<TokenKind> Token { get; }
+        }
+
+        public class BooleanLiteral : Literal<bool>
+        {
+            public BooleanLiteral(Token<TokenKind> token, bool value)
+                : base(token, value)
+            {
+            }
 
             public override T Accept<T>(IVisitor<T> visitor) =>
-                visitor.VisitLiteral(this);
+                visitor.VisitBooleanLiteral(this);
+        }
+
+        public class StringLiteral : Literal<string>
+        {
+            public StringLiteral(Token<TokenKind> token, string value)
+                : base(token, value)
+            {
+            }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitStringLiteral(this);
+        }
+
+        public class IntegerLiteral : Literal<int>
+        {
+            public IntegerLiteral(Token<TokenKind> token, int value)
+                : base(token, value)
+            {
+            }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitIntegerLiteral(this);
+        }
+
+        public class FloatLiteral : Literal<double>
+        {
+            public FloatLiteral(Token<TokenKind> token, double value)
+                : base(token, value)
+            {
+            }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitFloatLiteral(this);
         }
 
         public class Unary : Expr

@@ -32,6 +32,11 @@
                         .Where(x => x.Kind != TokenKind.Comment)
                         .ToArray();
 
+                    foreach (var tok in tokens)
+                    {
+                        Console.WriteLine(tok);
+                    }
+
                     var list = new TokenList<TokenKind>(tokens);
                     var ast = Oxi.TokenParsers.Expr.Parse(list);
 
