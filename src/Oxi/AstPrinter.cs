@@ -1,6 +1,5 @@
 namespace Oxi
 {
-    using System;
     using System.Text;
 
     public class AstPrinter : Expr.IVisitor<string>
@@ -11,10 +10,19 @@ namespace Oxi
         public string VisitGroupingExpr(Expr.Grouping expr) =>
             this.Parenthesize("group", expr.Expression);
 
-        public string VisitLiteral(Expr.Literal expr)
-        {
-            throw new NotImplementedException();
-        }
+        public string VisitIdentifier(Expr.Identifier expr) =>
+            expr.Value;
+
+        public string VisitLiteral(Expr.Literal expr) =>
+            expr.Value switch
+            {
+                Value.String x => x.ToString(),
+                Value.Integer x => x.Value.ToString(Config.CultureInfo),
+                Value.Float x => x.Value.ToString(Config.CultureInfo),
+                Value.Boolean x => x.Value.ToString(Config.CultureInfo),
+                Value.Object x => $"#{x.Value}",
+                _ => "TILT",
+            };
 
         public string VisitUnary(Expr.Unary expr) =>
             this.Parenthesize(expr.Op, expr.Right);

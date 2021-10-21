@@ -6,4 +6,9 @@ namespace Oxi
 
         IValue Clone();
     }
+
+    public interface IValue<T> : IValue
+    {
+        T Value { get; }
+    }
 }

@@ -11,5 +11,6 @@ namespace Oxi
         Object,
         List,
         Hash,
+        Error,
     }
 }

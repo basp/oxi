@@ -1,6 +1,8 @@
 namespace Oxi
 {
     using System;
+    using Optional;
+    using Superpower.Model;
 
     public class RuntimeException : Exception
     {
@@ -17,5 +19,13 @@ namespace Oxi
             : base(message, inner)
         {
         }
+
+        public RuntimeException(string message, Position position)
+            : this(message)
+        {
+            this.Position = Option.Some(position);
+        }
+
+        public Option<Position> Position { get; } = Option.None<Position>();
     }
 }

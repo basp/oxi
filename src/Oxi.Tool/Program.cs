@@ -21,6 +21,7 @@
 
             var interpreter = new Interpreter();
             var scanner = new Scanner();
+
             while (true)
             {
                 Console.Write("> ");
@@ -32,24 +33,53 @@
                         .Where(x => x.Kind != TokenKind.Comment)
                         .ToArray();
 
-                    foreach (var tok in tokens)
-                    {
-                        Console.WriteLine(tok);
-                    }
-
                     var list = new TokenList<TokenKind>(tokens);
                     var ast = Oxi.TokenParsers.Expr.Parse(list);
 
-                    var printer = new AstPrinter();
-                    Console.WriteLine(ast.Accept(printer));
+                    var printer = new PrettyPrinter();
+                    Console.WriteLine($": {ast.Accept(printer)}");
 
-                    var val = interpreter.Eval(ast);
-                    Console.WriteLine($"=> {Interpreter.Stringify(val)}");
+                    var result = interpreter.Eval(ast);
+                    Console.WriteLine($"=> {Stringify(result)}");
+                }
+                catch (RuntimeException ex)
+                {
+                    WriteLine(ex);
                 }
                 catch (ParseException ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    WriteLine(ex);
                 }
+            }
+        }
+
+        private static void WriteLine(ParseException ex) =>
+            Console.WriteLine(ex.Message);
+
+        private static void WriteLine(RuntimeException exception)
+        {
+            var msg = exception.Position.Match(
+                pos => $"Runtime error (line {pos.Line}, column {pos.Column}): {exception.Message}",
+                () => exception.Message);
+
+            Console.WriteLine(msg);
+        }
+
+        private static string Stringify(IValue value)
+        {
+            if (value == null)
+            {
+                return "nil";
+            }
+
+            switch (value)
+            {
+                case Value.Boolean x:
+                    return x.Value.ToString(Config.CultureInfo).ToLower();
+                case Value.Float x:
+                    return x.Value.ToString(Config.CultureInfo);
+                default:
+                    return value.ToString();
             }
         }
     }

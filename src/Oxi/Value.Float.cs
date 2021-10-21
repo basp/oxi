@@ -4,7 +4,7 @@ namespace Oxi
 
     public abstract partial class Value
     {
-        public class Float : Value, IFloatable
+        public class Float : Value, IValue<double>, IFloatable
         {
             public Float(double value)
             {
@@ -41,8 +41,8 @@ namespace Oxi
             public IValue Add(IValue value) =>
                 value switch
                 {
-                    Value.Integer y => new Value.Float(this.Value - (long)y.Value),
-                    Value.Float y => new Value.Float(this.Value - y.Value),
+                    Value.Integer y => new Value.Float(this.Value + (long)y.Value),
+                    Value.Float y => new Value.Float(this.Value + y.Value),
                     _ => throw new NotSupportedException(),
                 };
 

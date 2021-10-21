@@ -5,16 +5,16 @@ namespace Oxi
 
     public abstract partial class Value
     {
-        public class Integer : Value, IFloatable, IOrdinal
+        public class Integer : Value, IValue<int>, IFloatable, IOrdinal
         {
-            public Integer(BigInteger value)
+            public Integer(int value)
             {
                 this.Value = value;
             }
 
             public override ValueKind Kind => ValueKind.Integer;
 
-            public BigInteger Value { get; }
+            public int Value { get; }
 
             public int OrdinalValue => (int)this.Value;
 
@@ -69,7 +69,7 @@ namespace Oxi
                 value switch
                 {
                     Value.Integer x => new Value.Integer(this.Value + x.Value),
-                    Value.Float x => new Value.Float((long)this.Value + x.Value),
+                    Value.Float x => new Value.Float(this.Value + x.Value),
                     _ => throw new NotSupportedException(),
                 };
 
@@ -77,7 +77,7 @@ namespace Oxi
                 value switch
                 {
                     Value.Integer y => new Value.Integer(this.Value / y.Value),
-                    Value.Float y => new Value.Float((long)this.Value / y.Value),
+                    Value.Float y => new Value.Float(this.Value / y.Value),
                     _ => throw new NotSupportedException(),
                 };
 
@@ -85,7 +85,7 @@ namespace Oxi
                 value switch
                 {
                     Value.Integer y => new Value.Integer(this.Value * y.Value),
-                    Value.Float y => new Value.Float((long)this.Value * y.Value),
+                    Value.Float y => new Value.Float(this.Value * y.Value),
                     _ => throw new NotSupportedException(),
                 };
 
@@ -93,7 +93,7 @@ namespace Oxi
                 value switch
                 {
                     Value.Integer y => new Value.Integer(this.Value - y.Value),
-                    Value.Float y => new Value.Float((long)this.Value - y.Value),
+                    Value.Float y => new Value.Float(this.Value - y.Value),
                     _ => throw new NotSupportedException(),
                 };
 
@@ -142,7 +142,7 @@ namespace Oxi
                 value switch
                 {
                     Value.Integer y =>
-                        new Value.Integer(BigInteger.Min(this.Value, y.Value)),
+                        new Value.Integer(Math.Min(this.Value, y.Value)),
                     Value.Float y =>
                         new Value.Float(Math.Min(this.AsFloat().Value, y.Value)),
                     _ => throw new NotSupportedException(),
@@ -152,7 +152,7 @@ namespace Oxi
                 value switch
                 {
                     Value.Integer y =>
-                        new Value.Integer(BigInteger.Max(this.Value, y.Value)),
+                        new Value.Integer(Math.Max(this.Value, y.Value)),
                     Value.Float y =>
                         new Value.Float(Math.Max(this.AsFloat().Value, y.Value)),
                     _ => throw new NotSupportedException(),

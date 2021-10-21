@@ -11,6 +11,8 @@
 
             T VisitGroupingExpr(Grouping expr);
 
+            T VisitIdentifier(Identifier expr);
+
             T VisitLiteral(Literal expr);
 
             T VisitUnary(Unary expr);
@@ -62,6 +64,22 @@
                 visitor.VisitGroupingExpr(this);
         }
 
+        public class Identifier : Expr
+        {
+            public Identifier(Token<TokenKind> tok, string value)
+            {
+                this.Token = tok;
+                this.Value = value;
+            }
+
+            public string Value { get; }
+
+            public override Token<TokenKind> Token { get; }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitIdentifier(this);
+        }
+
         public class Literal : Expr
         {
             public Literal(Token<TokenKind> tok, IValue value)
@@ -74,10 +92,8 @@
 
             public override Token<TokenKind> Token { get; }
 
-            public override T Accept<T>(IVisitor<T> visitor)
-            {
-                throw new NotImplementedException();
-            }
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitLiteral(this);
         }
 
         public class Unary : Expr
@@ -97,6 +113,36 @@
 
             public override T Accept<T>(IVisitor<T> visitor) =>
                 visitor.VisitUnary(this);
+        }
+
+        public class VerbCall : Expr
+        {
+            public override Token<TokenKind> Token { get; }
+
+            public override T Accept<T>(IVisitor<T> visitor)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class FunctionCall : Expr
+        {
+            public FunctionCall(Identifier fn, params Expr[] args)
+            {
+                this.Function = fn;
+                this.Arguments = args;
+            }
+
+            public Identifier Function { get; }
+
+            public Expr[] Arguments { get; }
+
+            public override Token<TokenKind> Token { get; }
+
+            public override T Accept<T>(IVisitor<T> visitor)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

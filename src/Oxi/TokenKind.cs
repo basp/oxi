@@ -20,6 +20,7 @@ namespace Oxi
         Minus,
         Star,
         Slash,
+        Percent,
         Colon,
         Semicolon,
         Question,

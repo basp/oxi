@@ -1,6 +1,5 @@
 namespace Oxi
 {
-    using System.Globalization;
     using Superpower;
     using Superpower.Model;
     using Superpower.Parsers;
@@ -65,6 +64,20 @@ namespace Oxi
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Divide =
             Token.EqualTo(TokenKind.Slash);
 
+        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Remainder =
+            Token.EqualTo(TokenKind.Percent);
+
+        private static readonly TokenListParser<TokenKind, Expr> Identifier =
+            Token.EqualTo(TokenKind.Identifier)
+                .Select(x => CreateIdentifier(x));
+
+        private static readonly TokenListParser<TokenKind, Expr> Object =
+            from pound in Token.EqualTo(TokenKind.Pound)
+            from sign in Token.EqualTo(TokenKind.Minus).Optional()
+            from @int in Token.EqualTo(TokenKind.Integer)
+            let value = int.Parse(@int.ToStringValue())
+            select CreateObjectLiteral(pound, sign.HasValue ? -value : value);
+
         private static readonly TokenListParser<TokenKind, Expr> String =
             Token.EqualTo(TokenKind.String)
                 .Select(x => new { tok = x, val = x.ToStringValue().Trim('"') })
@@ -89,17 +102,25 @@ namespace Oxi
                 });
 
         private static readonly TokenListParser<TokenKind, Expr> Literal =
-            String
-                .Or(Integer)
-                .Or(Float)
-                .Or(True)
-                .Or(False);
+            Parse.OneOf(
+                Object,
+                String,
+                Integer,
+                Float,
+                True,
+                False);
+
+        private static readonly TokenListParser<TokenKind, Expr> Grouping =
+            from lparen in Token.EqualTo(TokenKind.LeftParen)
+            from expr in Parse.Ref(() => Expr)
+            from rparen in Token.EqualTo(TokenKind.RightParen)
+            select (Expr)new Expr.Grouping(lparen, expr);
 
         private static readonly TokenListParser<TokenKind, Expr> Factor =
-            (from lparen in Token.EqualTo(TokenKind.LeftParen)
-             from expr in Parse.Ref(() => Expr)
-             from rparen in Token.EqualTo(TokenKind.RightParen)
-             select (Expr)new Expr.Grouping(lparen, expr)).Or(Literal);
+            Parse.OneOf(
+                Grouping,
+                Literal,
+                Identifier);
 
         private static readonly TokenListParser<TokenKind, Expr> Operand =
             (from op in Negate.Or(Not)
@@ -107,7 +128,7 @@ namespace Oxi
              select CreateUnary(op, factor)).Or(Factor).Named("expression");
 
         private static readonly TokenListParser<TokenKind, Expr> Term =
-            Parse.Chain(Multiply.Or(Divide), Operand, CreateBinary);
+            Parse.Chain(Multiply.Or(Divide).Or(Remainder), Operand, CreateBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Comparand =
             Parse.Chain(Add.Or(Subtract), Term, CreateBinary);
@@ -120,6 +141,12 @@ namespace Oxi
 
         private static readonly TokenListParser<TokenKind, Expr> Disjunction =
             Parse.Chain(Or, Conjunction, CreateBinary);
+
+        private static Expr CreateIdentifier(Token<TokenKind> tok) =>
+            new Expr.Identifier(tok, tok.ToStringValue());
+
+        private static Expr CreateObjectLiteral(Token<TokenKind> tok, int value) =>
+            new Expr.Literal(tok, new Value.Object(value));
 
         private static Expr CreateIntegerLiteral(Token<TokenKind> tok, int value) =>
             new Expr.Literal(tok, new Value.Integer(value));

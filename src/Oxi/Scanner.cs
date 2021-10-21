@@ -40,6 +40,7 @@ namespace Oxi
             SimpleOps['-'] = TokenKind.Minus;
             SimpleOps['*'] = TokenKind.Star;
             SimpleOps['/'] = TokenKind.Slash;
+            SimpleOps['%'] = TokenKind.Percent;
             SimpleOps['<'] = TokenKind.Less;
             SimpleOps['>'] = TokenKind.Greater;
             SimpleOps['='] = TokenKind.Equal;
@@ -151,15 +152,6 @@ namespace Oxi
                         next.Remainder);
 
                     next = next.Remainder.ConsumeChar();
-                }
-                else if (next.Value == '#')
-                {
-                    var comment = Comment.ShellStyle(next.Location);
-                    next = comment.Remainder.ConsumeChar();
-                    yield return Result.Value(
-                        TokenKind.Comment,
-                        comment.Location,
-                        comment.Remainder);
                 }
                 else
                 {
