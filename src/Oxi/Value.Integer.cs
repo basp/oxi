@@ -1,7 +1,6 @@
 namespace Oxi
 {
     using System;
-    using System.Numerics;
 
     public abstract partial class Value
     {
@@ -17,6 +16,8 @@ namespace Oxi
             public int Value { get; }
 
             public int OrdinalValue => (int)this.Value;
+
+            public override bool IsTruthy => this.Value != 0;
 
             public Value.Float AsFloat() =>
                 new Value.Float((long)this.Value);

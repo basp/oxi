@@ -9,6 +9,31 @@ namespace Oxi
         public static readonly TokenListParser<TokenKind, Expr> Expr =
             Parse.Ref(() => Disjunction);
 
+        public static readonly TokenListParser<TokenKind, Stmt> Block =
+            from stmts in Parse
+                .OneOf(
+                    Parse.Ref(() => ReturnStmt),
+                    Parse.Ref(() => ExprStmt))
+                .AtLeastOnce()
+            select (Stmt)new Stmt.Block(stmts[0].Token, stmts);
+
+        private static readonly TokenListParser<TokenKind, Stmt> ExprStmt =
+            from expr in Expr
+            from semi in Token.EqualTo(TokenKind.Semicolon)
+            select (Stmt)new Stmt.ExprStmt(expr.Token, expr);
+
+        private static readonly TokenListParser<TokenKind, Stmt> ReturnStmt =
+            from ret in Token.EqualTo(TokenKind.Return)
+            from stmt in ExprStmt
+            let expr = ((Stmt.ExprStmt)stmt).Expression
+            select (Stmt)new Stmt.Return(ret, expr);
+
+        private static readonly TokenListParser<TokenKind, Stmt> IfStmt =
+            null;
+
+        private static readonly TokenListParser<TokenKind, Stmt> KeywordStmt =
+            ReturnStmt;
+
         private static readonly TokenListParser<TokenKind, Expr> True =
             Token
                 .EqualTo(TokenKind.True)
@@ -24,6 +49,9 @@ namespace Oxi
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Arrow =
             Token.EqualTo(TokenKind.EqualGreater);
+
+        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Dot =
+            Token.EqualTo(TokenKind.Dot);
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Not =
             Token.EqualTo(TokenKind.Bang);
@@ -72,11 +100,13 @@ namespace Oxi
                 .Select(x => CreateIdentifier(x));
 
         private static readonly TokenListParser<TokenKind, Expr> Object =
-            from pound in Token.EqualTo(TokenKind.Pound)
-            from sign in Token.EqualTo(TokenKind.Minus).Optional()
-            from @int in Token.EqualTo(TokenKind.Integer)
-            let value = int.Parse(@int.ToStringValue())
-            select CreateObjectLiteral(pound, sign.HasValue ? -value : value);
+            Token.EqualTo(TokenKind.Object)
+                .Select(tok =>
+                {
+                    var str = tok.ToStringValue().TrimStart('#');
+                    var i = int.Parse(str, Config.CultureInfo);
+                    return CreateObjectLiteral(tok, i);
+                });
 
         private static readonly TokenListParser<TokenKind, Expr> String =
             Token.EqualTo(TokenKind.String)
@@ -110,14 +140,46 @@ namespace Oxi
                 True,
                 False);
 
+        private static readonly TokenListParser<TokenKind, Expr> List =
+            from xs in Expr
+                .ManyDelimitedBy(Token.EqualTo(TokenKind.Comma))
+                .Between(
+                    Token.EqualTo(TokenKind.LeftBrace),
+                    Token.EqualTo(TokenKind.RightBrace))
+            select (Expr)new Expr.List(Token<TokenKind>.Empty, xs);
+
         private static readonly TokenListParser<TokenKind, Expr> Grouping =
-            from lparen in Token.EqualTo(TokenKind.LeftParen)
-            from expr in Parse.Ref(() => Expr)
-            from rparen in Token.EqualTo(TokenKind.RightParen)
-            select (Expr)new Expr.Grouping(lparen, expr);
+            from expr in Expr
+                .Between(
+                    Token.EqualTo(TokenKind.LeftParen),
+                    Token.EqualTo(TokenKind.RightParen))
+            select (Expr)new Expr.Grouping(expr.Token, expr);
+
+        private static readonly TokenListParser<TokenKind, Expr> FunctionCall =
+            from fn in Grouping.Or(Identifier)
+            from args in Expr
+                .ManyDelimitedBy(Token.EqualTo(TokenKind.Comma))
+                .Between(
+                    Token.EqualTo(TokenKind.LeftParen),
+                    Token.EqualTo(TokenKind.RightParen))
+            select (Expr)new Expr.FunctionCall(fn.Token, fn, args);
+
+        private static readonly TokenListParser<TokenKind, Expr> VerbCall =
+            from obj in Grouping.Or(Object).Or(Identifier)
+            from colon in Token.EqualTo(TokenKind.Colon)
+            from verb in Grouping.Or(Identifier)
+            from args in Expr
+                .ManyDelimitedBy(Token.EqualTo(TokenKind.Comma))
+                .Between(
+                    Token.EqualTo(TokenKind.LeftParen),
+                    Token.EqualTo(TokenKind.RightParen))
+            select (Expr)new Expr.VerbCall(obj.Token, obj, verb, args);
 
         private static readonly TokenListParser<TokenKind, Expr> Factor =
             Parse.OneOf(
+                FunctionCall.Try(),
+                VerbCall.Try(),
+                List,
                 Grouping,
                 Literal,
                 Identifier);
@@ -128,7 +190,7 @@ namespace Oxi
              select CreateUnary(op, factor)).Or(Factor).Named("expression");
 
         private static readonly TokenListParser<TokenKind, Expr> Term =
-            Parse.Chain(Multiply.Or(Divide).Or(Remainder), Operand, CreateBinary);
+            Parse.Chain(Dot.Or(Multiply).Or(Divide).Or(Remainder), Operand, CreateBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Comparand =
             Parse.Chain(Add.Or(Subtract), Term, CreateBinary);

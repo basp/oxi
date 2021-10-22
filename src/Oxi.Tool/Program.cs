@@ -1,7 +1,9 @@
 ﻿namespace Oxi.Tool
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
     using PowerArgs;
     using Superpower;
     using Superpower.Model;
@@ -21,6 +23,11 @@
 
             var interpreter = new Interpreter();
             var scanner = new Scanner();
+            var printers = new Dictionary<Stmt.IVisitor<string>, bool>
+            {
+                [new AstPrinter()] = true,
+                [new PrettyPrinter()] = false,
+            };
 
             while (true)
             {
@@ -34,35 +41,68 @@
                         .ToArray();
 
                     var list = new TokenList<TokenKind>(tokens);
-                    var ast = Oxi.TokenParsers.Expr.Parse(list);
+                    var ast = Oxi.TokenParsers.Block.Parse(list);
 
-                    var printer = new PrettyPrinter();
-                    Console.WriteLine($": {ast.Accept(printer)}");
+                    foreach (var (printer, enabled) in printers)
+                    {
+                        if (enabled)
+                        {
+                            Console.WriteLine(ast.Accept(printer));
+                        }
+                    }
 
-                    var result = interpreter.Eval(ast);
-                    Console.WriteLine($"=> {Stringify(result)}");
+                    // var result = interpreter.Exec(ast);
+                    // Console.WriteLine($"=> {Stringify(result)}");
                 }
                 catch (RuntimeException ex)
                 {
-                    WriteLine(ex);
+                    Print(src, ex);
                 }
                 catch (ParseException ex)
                 {
-                    WriteLine(ex);
+                    Print(src, ex);
                 }
             }
         }
 
-        private static void WriteLine(ParseException ex) =>
-            Console.WriteLine(ex.Message);
+        private static void Print(string src, ParseException ex)
+        {
+            if (ex.ErrorPosition.HasValue)
+            {
+                var line = src.Split(Environment.NewLine)[ex.ErrorPosition.Line - 1];
+                var pointer = "^".PadLeft(ex.ErrorPosition.Column);
+                var buf = new StringBuilder();
+                buf.AppendLine(ex.Message);
+                buf.AppendLine(line);
+                buf.AppendLine(pointer);
+                Console.Write(buf.ToString());
+                return;
+            }
 
-        private static void WriteLine(RuntimeException exception)
+            Console.WriteLine(ex.Message);
+        }
+
+        private static void Print(string src, RuntimeException exception)
         {
             var msg = exception.Position.Match(
-                pos => $"Runtime error (line {pos.Line}, column {pos.Column}): {exception.Message}",
-                () => exception.Message);
+                pos =>
+                {
+                    var line = src.Split(Environment.NewLine)[pos.Line - 1];
+                    var pointer = "^".PadLeft(pos.Column);
+                    var buf = new StringBuilder();
+                    buf.Append("Runtime error ");
+                    buf.AppendFormat(
+                        "(line {0}, column {1}): ",
+                        pos.Line,
+                        pos.Column);
+                    buf.AppendLine(exception.Message);
+                    buf.AppendLine(line);
+                    buf.AppendLine(pointer);
+                    return buf.ToString();
+                },
+                () => $"Runtime error: {exception.Message}\n");
 
-            Console.WriteLine(msg);
+            Console.Write(msg);
         }
 
         private static string Stringify(IValue value)

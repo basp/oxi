@@ -7,15 +7,21 @@
     {
         public interface IVisitor<T>
         {
-            T VisitBinaryExpr(Binary expr);
+            T VisitBinary(Binary expr);
 
-            T VisitGroupingExpr(Grouping expr);
+            T VisitGrouping(Grouping expr);
 
             T VisitIdentifier(Identifier expr);
 
             T VisitLiteral(Literal expr);
 
+            T VisitList(List expr);
+
             T VisitUnary(Unary expr);
+
+            T VisitFunctionCall(FunctionCall expr);
+
+            T VisitVerbCall(VerbCall expr);
         }
 
         public abstract Token<TokenKind> Token { get; }
@@ -45,7 +51,7 @@
             public override Token<TokenKind> Token { get; }
 
             public override T Accept<T>(IVisitor<T> visitor) =>
-                visitor.VisitBinaryExpr(this);
+                visitor.VisitBinary(this);
         }
 
         public class Grouping : Expr
@@ -61,7 +67,7 @@
             public override Token<TokenKind> Token { get; }
 
             public override T Accept<T>(IVisitor<T> visitor) =>
-                visitor.VisitGroupingExpr(this);
+                visitor.VisitGrouping(this);
         }
 
         public class Identifier : Expr
@@ -78,6 +84,22 @@
 
             public override T Accept<T>(IVisitor<T> visitor) =>
                 visitor.VisitIdentifier(this);
+        }
+
+        public class List : Expr
+        {
+            public List(Token<TokenKind> tok, Expr[] elements)
+            {
+                this.Token = tok;
+                this.Elements = elements;
+            }
+
+            public override Token<TokenKind> Token { get; }
+
+            public Expr[] Elements { get; }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitList(this);
         }
 
         public class Literal : Expr
@@ -117,32 +139,43 @@
 
         public class VerbCall : Expr
         {
-            public override Token<TokenKind> Token { get; }
-
-            public override T Accept<T>(IVisitor<T> visitor)
+            public VerbCall(Token<TokenKind> tok, Expr obj, Expr verb, Expr[] args)
             {
-                throw new NotImplementedException();
-            }
-        }
-
-        public class FunctionCall : Expr
-        {
-            public FunctionCall(Identifier fn, params Expr[] args)
-            {
-                this.Function = fn;
+                this.Token = tok;
+                this.Object = obj;
+                this.Verb = verb;
                 this.Arguments = args;
             }
 
-            public Identifier Function { get; }
+            public Expr Object { get; }
+
+            public Expr Verb { get; }
 
             public Expr[] Arguments { get; }
 
             public override Token<TokenKind> Token { get; }
 
-            public override T Accept<T>(IVisitor<T> visitor)
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitVerbCall(this);
+        }
+
+        public class FunctionCall : Expr
+        {
+            public FunctionCall(Token<TokenKind> tok, Expr fn, Expr[] args)
             {
-                throw new NotImplementedException();
+                this.Token = tok;
+                this.Function = fn;
+                this.Arguments = args;
             }
+
+            public Expr Function { get; }
+
+            public Expr[] Arguments { get; }
+
+            public override Token<TokenKind> Token { get; }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitFunctionCall(this);
         }
     }
 }

@@ -15,6 +15,8 @@ namespace Oxi
 
             public int OrdinalValue => (int)this.Value;
 
+            public override bool IsTruthy => this.Value != default(char);
+
             public IValue Chr() => new Value.Character(this.Value);
 
             public override IValue Clone() => new Value.Character(this.Value);

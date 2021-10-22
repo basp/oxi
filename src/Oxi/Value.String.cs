@@ -25,6 +25,8 @@ namespace Oxi
                     .Cast<IValue>()
                     .ToList();
 
+            public override bool IsTruthy => this.Value.Length > 0;
+
             public override IValue Clone() => new String(this.Value);
 
             public override string ToString() => $"\"{this.Value}\"";

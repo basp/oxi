@@ -1,17 +1,77 @@
 namespace Oxi
 {
+    using System.Linq;
     using System.Text;
 
-    public class AstPrinter : Expr.IVisitor<string>
+    public class AstPrinter : Expr.IVisitor<string>, Stmt.IVisitor<string>
     {
-        public string VisitBinaryExpr(Expr.Binary expr) =>
+        private const string Indent = "\t";
+
+        private const string TILT = "<<< ?!?! TILT ?!?! >>>";
+
+        public string VisitBinary(Expr.Binary expr) =>
             this.Parenthesize(expr.Op, expr.Left, expr.Right);
 
-        public string VisitGroupingExpr(Expr.Grouping expr) =>
+        public string VisitBlock(Stmt.Block block)
+        {
+            var buf = new StringBuilder();
+            buf.AppendLine("(block");
+            var last = block.Body.Length - 1;
+            for (var i = 0; i < last; i++)
+            {
+                buf.AppendLine($"{Indent}{block.Body[i].Accept(this)}");
+            }
+
+            buf.Append($"{Indent}{block.Body[last].Accept(this)}");
+            buf.AppendLine(")");
+            return buf.ToString();
+        }
+
+        public string VisitExprStmt(Stmt.ExprStmt stmt) =>
+            this.Parenthesize("stmt", stmt.Expression);
+
+        public string VisitFunctionCall(Expr.FunctionCall expr)
+        {
+            var id = expr.Function.Accept(this);
+            if (expr.Arguments.Length == 0)
+            {
+                return $"({id})";
+            }
+
+            var args = expr.Arguments
+                .Select(x => x.Accept(this))
+                .ToArray();
+
+            return $"({id} {string.Join(" ", args)})";
+        }
+
+        public string VisitVerbCall(Expr.VerbCall call)
+        {
+            var obj = call.Object.Accept(this);
+            var verb = call.Verb.Accept(this);
+            if (call.Arguments.Length == 0)
+            {
+                return $"({obj}:{verb})";
+            }
+
+            var args = call.Arguments
+                .Select(x => x.Accept(this))
+                .ToArray();
+
+            return $"({obj}:{verb} {string.Join(" ", args)})";
+        }
+
+        public string VisitGrouping(Expr.Grouping expr) =>
             this.Parenthesize("group", expr.Expression);
 
         public string VisitIdentifier(Expr.Identifier expr) =>
             expr.Value;
+
+        public string VisitList(Expr.List expr)
+        {
+            var xs = expr.Elements.Select(x => x.Accept(this)).ToArray();
+            return $"(list {string.Join(" ", xs)})";
+        }
 
         public string VisitLiteral(Expr.Literal expr) =>
             expr.Value switch
@@ -21,8 +81,11 @@ namespace Oxi
                 Value.Float x => x.Value.ToString(Config.CultureInfo),
                 Value.Boolean x => x.Value.ToString(Config.CultureInfo),
                 Value.Object x => $"#{x.Value}",
-                _ => "TILT",
+                _ => TILT,
             };
+
+        public string VisitReturn(Stmt.Return stmt) =>
+            $"(return {stmt.Expression.Accept(this)})";
 
         public string VisitUnary(Expr.Unary expr) =>
             this.Parenthesize(expr.Op, expr.Right);

@@ -94,6 +94,11 @@ namespace Oxi
                 else if (char.IsDigit(next.Value))
                 {
                     var num = Numerics.Decimal(next.Location);
+                    if (!num.HasValue)
+                    {
+                        yield return Result.Empty<TokenKind>(num.Location);
+                    }
+
                     var kind = int.TryParse(num.Value.ToStringValue(), out var _)
                         ? TokenKind.Integer
                         : TokenKind.Float;
@@ -101,6 +106,16 @@ namespace Oxi
                     next = num.Remainder.ConsumeChar();
                     yield return Result.Value(
                         kind,
+                        num.Location,
+                        num.Remainder);
+                }
+                else if (next.Value == '#')
+                {
+                    next = next.Remainder.ConsumeChar();
+                    var num = Numerics.Integer(next.Location);
+                    next = num.Remainder.ConsumeChar();
+                    yield return Result.Value(
+                        TokenKind.Object,
                         num.Location,
                         num.Remainder);
                 }

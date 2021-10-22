@@ -4,6 +4,8 @@ namespace Oxi
     {
         ValueKind Kind { get; }
 
+        bool IsTruthy { get; }
+
         IValue Clone();
     }
 

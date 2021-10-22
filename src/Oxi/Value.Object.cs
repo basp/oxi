@@ -13,6 +13,8 @@ namespace Oxi
 
             public override ValueKind Kind => ValueKind.Object;
 
+            public override bool IsTruthy => false;
+
             public override IValue Clone() =>
                 new Value.Object(this.Value);
 

@@ -15,6 +15,8 @@ namespace Oxi
 
             public bool Value { get; }
 
+            public override bool IsTruthy => this.Value;
+
             public override IValue Clone() => new Boolean(this.Value);
 
             public override string ToString() =>

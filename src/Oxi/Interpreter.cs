@@ -1,14 +1,37 @@
 namespace Oxi
 {
     using System;
+    using System.Linq;
     using Superpower.Model;
 
-    public class Interpreter : Expr.IVisitor<IValue>
+    public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
     {
+        public IValue Exec(Stmt stmt) =>
+            ThrowIfError(stmt.Accept(this), stmt.Token.Position);
+
         public IValue Eval(Expr expr) =>
             ThrowIfError(expr.Accept(this), expr.Token.Position);
 
-        public IValue VisitBinaryExpr(Expr.Binary expr)
+        public IValue VisitExprStmt(Stmt.ExprStmt stmt) =>
+            ThrowIfError(
+                this.Eval(stmt.Expression),
+                stmt.Token.Position);
+
+        public IValue VisitBlock(Stmt.Block block)
+        {
+            IValue result = null;
+            foreach (var stmt in block.Body)
+            {
+                result = ThrowIfError(stmt.Accept(this), stmt.Token.Position);
+            }
+
+            return result;
+        }
+
+        public IValue VisitReturn(Stmt.Return stmt) =>
+            this.Eval(stmt.Expression);
+
+        public IValue VisitBinary(Expr.Binary expr)
         {
             var left = ThrowIfError(
                 this.Eval(expr.Left),
@@ -32,14 +55,14 @@ namespace Oxi
                 "%" => Remainder(left, right),
                 "*" => Multiply(left, right),
                 _ => throw new RuntimeException(
-                    $"Invalid binary operation `{expr.Op}`",
+                    $"invalid binary operation `{expr.Op}`",
                     expr.Token.Position),
             };
 
             return ThrowIfError(result, expr.Token.Position);
         }
 
-        public IValue VisitGroupingExpr(Expr.Grouping expr) =>
+        public IValue VisitGrouping(Expr.Grouping expr) =>
             this.Eval(expr.Expression);
 
         public IValue VisitUnary(Expr.Unary expr)
@@ -53,17 +76,33 @@ namespace Oxi
                 "!" => new Value.Boolean(!IsThruthy(right)),
                 "-" => throw new NotImplementedException(),
                 _ => throw new RuntimeException(
-                    $"Invalid unary operation `{expr.Op}`",
+                    $"invalid unary operation `{expr.Op}`",
                     expr.Token.Position),
             };
 
             return ThrowIfError(result, expr.Token.Position);
         }
 
+        public IValue VisitList(Expr.List expr)
+        {
+            var xs = expr.Elements.Select(x => x.Accept(this)).ToArray();
+            return new Value.List(xs);
+        }
+
         public IValue VisitIdentifier(Expr.Identifier expr) =>
             Value.Error.VARNF;
 
         public IValue VisitLiteral(Expr.Literal expr) => expr.Value;
+
+        public IValue VisitFunctionCall(Expr.FunctionCall expr)
+        {
+            return new Value.Boolean(true);
+        }
+
+        public IValue VisitVerbCall(Expr.VerbCall expr)
+        {
+            return new Value.Boolean(true);
+        }
 
         private static IValue ThrowIfError(IValue value, Position position)
         {

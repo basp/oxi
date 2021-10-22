@@ -15,6 +15,9 @@ namespace Oxi
 
             public double Value { get; }
 
+            public override bool IsTruthy =>
+                this.Value > 0.0 || this.Value < -0.0;
+
             public override IValue Clone() => new Float(this.Value);
 
             public override string ToString() => this.Value.ToString();
