@@ -31,6 +31,9 @@ namespace Oxi
         public IValue VisitReturn(Stmt.Return stmt) =>
             this.Eval(stmt.Expression);
 
+        public IValue VisitIfStmt(Stmt.If stmt) =>
+            throw new NotImplementedException();
+
         public IValue VisitBinary(Expr.Binary expr)
         {
             var left = ThrowIfError(

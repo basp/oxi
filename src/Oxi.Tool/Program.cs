@@ -26,7 +26,7 @@
             var printers = new Dictionary<Stmt.IVisitor<string>, bool>
             {
                 [new AstPrinter()] = true,
-                [new PrettyPrinter()] = false,
+                [new PrettyPrinter()] = true,
             };
 
             while (true)
@@ -41,7 +41,7 @@
                         .ToArray();
 
                     var list = new TokenList<TokenKind>(tokens);
-                    var ast = Oxi.TokenParsers.Block.Parse(list);
+                    var ast = Oxi.TokenParsers.Program.Parse(list);
 
                     foreach (var (printer, enabled) in printers)
                     {

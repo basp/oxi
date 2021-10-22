@@ -17,9 +17,16 @@ namespace Oxi
         public static readonly TextParser<TokenKind> GreaterEqual =
             Span.EqualTo(">=").Value(TokenKind.GreaterEqual);
 
+        // public static readonly TextParser<TokenKind> CompoundOperator =
+        //     EqualEqual.Or(
+        //         GreaterEqual.Try().Or(
+        //         LessEqual.Try().Or(BangEqual)));
+
         public static readonly TextParser<TokenKind> CompoundOperator =
-            EqualEqual.Or(
-                GreaterEqual.Try().Or(
-                LessEqual.Try().Or(BangEqual)));
+            Parse.OneOf(
+                EqualEqual,
+                GreaterEqual,
+                LessEqual,
+                BangEqual);
     }
 }

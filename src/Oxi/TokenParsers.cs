@@ -1,5 +1,6 @@
 namespace Oxi
 {
+    using System.Linq;
     using Superpower;
     using Superpower.Model;
     using Superpower.Parsers;
@@ -9,11 +10,15 @@ namespace Oxi
         public static readonly TokenListParser<TokenKind, Expr> Expr =
             Parse.Ref(() => Disjunction);
 
-        public static readonly TokenListParser<TokenKind, Stmt> Block =
+        public static readonly TokenListParser<TokenKind, Stmt> Program =
+            Parse.Ref(() => Block);
+
+        private static readonly TokenListParser<TokenKind, Stmt> Block =
             from stmts in Parse
                 .OneOf(
                     Parse.Ref(() => ReturnStmt),
-                    Parse.Ref(() => ExprStmt))
+                    Parse.Ref(() => ExprStmt),
+                    Parse.Ref(() => IfStmt))
                 .AtLeastOnce()
             select (Stmt)new Stmt.Block(stmts[0].Token, stmts);
 
@@ -28,8 +33,24 @@ namespace Oxi
             let expr = ((Stmt.ExprStmt)stmt).Expression
             select (Stmt)new Stmt.Return(ret, expr);
 
+        private static TokenListParser<TokenKind, Conditional> IfThen(TokenKind kind) =>
+            from @if in Token.EqualTo(kind)
+            from cond in Parse.Ref(() => Grouping)
+            from cons in Block
+            select new Conditional(cond, cons);
+
+        private static TokenListParser<TokenKind, Stmt> OptionalElse =
+            (Token.EqualTo(TokenKind.Else).IgnoreThen(Block)).OptionalOrDefault();
+
         private static readonly TokenListParser<TokenKind, Stmt> IfStmt =
-            null;
+            from @if in IfThen(TokenKind.If)
+            from elseIfs in IfThen(TokenKind.ElseIf).Many()
+            from @else in OptionalElse
+            from endif in Token.EqualTo(TokenKind.EndIf)
+            let arms = new[] { @if }.Concat(elseIfs)
+            let conditions = arms.Select(x => x.Condition).ToArray()
+            let consequences = arms.Select(x => x.Consequence).ToArray()
+            select (Stmt)new Stmt.If(conditions, consequences, @else);
 
         private static readonly TokenListParser<TokenKind, Stmt> KeywordStmt =
             ReturnStmt;
@@ -227,5 +248,19 @@ namespace Oxi
 
         private static Expr CreateUnary(Token<TokenKind> op, Expr right) =>
             new Expr.Unary(op, op.ToStringValue(), right);
+
+
+        private class Conditional
+        {
+            public Conditional(Expr condition, Stmt consequence)
+            {
+                this.Condition = condition;
+                this.Consequence = consequence;
+            }
+
+            public Expr Condition { get; }
+
+            public Stmt Consequence { get; }
+        }
     }
 }

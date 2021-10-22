@@ -1,11 +1,12 @@
 namespace Oxi
 {
+    using System;
     using System.Linq;
     using System.Text;
 
     public class AstPrinter : Expr.IVisitor<string>, Stmt.IVisitor<string>
     {
-        private const string Indent = "\t";
+        private int level = 0;
 
         private const string TILT = "<<< ?!?! TILT ?!?! >>>";
 
@@ -15,20 +16,58 @@ namespace Oxi
         public string VisitBlock(Stmt.Block block)
         {
             var buf = new StringBuilder();
-            buf.AppendLine("(block");
-            var last = block.Body.Length - 1;
-            for (var i = 0; i < last; i++)
+            buf.AppendLine(Indent("(block"));
+            Indented(() =>
             {
-                buf.AppendLine($"{Indent}{block.Body[i].Accept(this)}");
-            }
+                for (var i = 0; i < block.Body.Length - 1; i++)
+                {
+                    buf.AppendLine(block.Body[i].Accept(this));
+                }
 
-            buf.Append($"{Indent}{block.Body[last].Accept(this)}");
-            buf.AppendLine(")");
+                buf.Append(block.Body[block.Body.Length - 1].Accept(this));
+                buf.Append(")");
+            });
+            return buf.ToString();
+        }
+
+        public string VisitIfStmt(Stmt.If stmt)
+        {
+            var arms = stmt.Conditions.Zip(
+                stmt.Consequences,
+                (cond, cons) => new { cond, cons })
+                .ToArray();
+
+            var buf = new StringBuilder();
+            buf.AppendLine(Indent("(if"));
+            Indented(() =>
+            {
+                for (var i = 0; i < arms.Length - 1; i++)
+                {
+                    var arm = arms[i];
+                    buf.AppendLine(Indent("(arm"));
+                    Indented(() =>
+                    {
+                        buf.AppendLine(Indent(arm.cond.Accept(this)));
+                        buf.Append(arm.cons.Accept(this));
+                    });
+                    buf.AppendLine(")");
+                }
+
+                var last = arms[arms.Length - 1];
+                buf.AppendLine(Indent("(arm"));
+                Indented(() =>
+                {
+                    buf.AppendLine(Indent(last.cond.Accept(this)));
+                    buf.Append(last.cons.Accept(this));
+                });
+                buf.Append(")");
+            });
+            buf.Append(")");
             return buf.ToString();
         }
 
         public string VisitExprStmt(Stmt.ExprStmt stmt) =>
-            this.Parenthesize("stmt", stmt.Expression);
+            Indent(this.Parenthesize("stmt", stmt.Expression));
 
         public string VisitFunctionCall(Expr.FunctionCall expr)
         {
@@ -85,7 +124,7 @@ namespace Oxi
             };
 
         public string VisitReturn(Stmt.Return stmt) =>
-            $"(return {stmt.Expression.Accept(this)})";
+            Indent($"(return {stmt.Expression.Accept(this)})");
 
         public string VisitUnary(Expr.Unary expr) =>
             this.Parenthesize(expr.Op, expr.Right);
@@ -104,5 +143,15 @@ namespace Oxi
             buf.Append(")");
             return buf.ToString();
         }
+
+        private void Indented(Action write)
+        {
+            this.level++;
+            write();
+            this.level--;
+        }
+
+        private string Indent(string value) =>
+            string.Concat("".PadLeft(this.level * 2), value);
     }
 }

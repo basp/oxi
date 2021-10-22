@@ -11,6 +11,8 @@ namespace Oxi
             T VisitBlock(Block stmt);
 
             T VisitReturn(Return stmt);
+
+            T VisitIfStmt(If stmt);
         }
 
         public abstract Token<TokenKind> Token { get; }
@@ -63,6 +65,30 @@ namespace Oxi
 
             public override T Accept<T>(IVisitor<T> visitor) =>
                 visitor.VisitReturn(this);
+        }
+
+        public class If : Stmt
+        {
+            public If(
+                Expr[] conditions,
+                Stmt[] consequences,
+                Stmt alternative = null)
+            {
+                this.Conditions = conditions;
+                this.Consequences = consequences;
+                this.Alternative = alternative;
+            }
+
+            public Expr[] Conditions { get; }
+
+            public Stmt[] Consequences { get; }
+
+            public Stmt Alternative { get; }
+
+            public override Token<TokenKind> Token { get; }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitIfStmt(this);
         }
     }
 }
