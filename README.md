@@ -1,2 +1,2 @@
 # oxi
-Oxi
+.NET implementation of the MOO system.
