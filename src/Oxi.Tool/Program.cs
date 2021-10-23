@@ -60,8 +60,8 @@
                         }
                     }
 
-                    var result = interpreter.Exec(ast);
-                    Console.WriteLine($"=> {Stringify(result)}");
+                    // var result = interpreter.Exec(ast);
+                    // Console.WriteLine($"=> {Stringify(result)}");
                 }
                 catch (RuntimeException ex)
                 {

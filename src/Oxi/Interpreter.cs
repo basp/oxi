@@ -72,26 +72,23 @@ namespace Oxi
 
         public IValue VisitForStmt(Stmt.For stmt)
         {
-            var id = ThrowIfError(
-                stmt.Id.Accept(this),
-                stmt.Id.Token.Position);
-
             var cond = ThrowIfError(
                 stmt.Condition.Accept(this),
                 stmt.Token.Position);
 
-            string key = id switch
+            string id = stmt.Id switch
             {
-                _ => throw new NotImplementedException(),
+                Expr.Identifier x => x.Value,
+                _ => throw new InvalidOperationException(),
             };
 
-            IValue result;
+            IValue result = Value.Boolean.Get(false);
             var scope = this.env.Peek();
             if (cond is IAggregate agg)
             {
                 foreach (var val in agg)
                 {
-                    scope[key] = val;
+                    scope[id] = val;
                     result = stmt.Body.Accept(this);
                 }
             }

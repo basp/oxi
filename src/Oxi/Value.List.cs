@@ -29,7 +29,7 @@ namespace Oxi
 
             public int Size => throw new NotImplementedException();
 
-            public IList<IValue> Elements => throw new NotImplementedException();
+            public IList<IValue> Elements => this.Value;
 
             public IValue At(int i)
             {
