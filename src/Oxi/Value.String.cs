@@ -1,6 +1,7 @@
 namespace Oxi
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -86,6 +87,14 @@ namespace Oxi
                 rest = this.Rest();
                 return this.First();
             }
+
+            public IEnumerator<IValue> GetEnumerator() =>
+                this.Value
+                    .Select(x => new Value.Character(x))
+                    .GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() =>
+                this.GetEnumerator();
         }
     }
 }

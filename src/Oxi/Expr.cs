@@ -22,11 +22,56 @@
             T VisitFunctionCall(FunctionCall expr);
 
             T VisitVerbCall(VerbCall expr);
+
+            T VisitRange(Range expr);
+
+            T VisitProperty(Property expr);
         }
 
         public abstract Token<TokenKind> Token { get; }
 
         public abstract T Accept<T>(IVisitor<T> visitor);
+
+        public class Range : Expr
+        {
+            public Range(Token<TokenKind> tok, Expr from, Expr to)
+            {
+                this.Token = tok;
+                this.From = from;
+                this.To = to;
+            }
+
+            public override Token<TokenKind> Token { get; }
+
+            public Expr From { get; }
+
+            public Expr To { get; }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitRange(this);
+        }
+
+        public class Property : Expr
+        {
+            public Property(
+                Token<TokenKind> tok,
+                Expr obj,
+                Expr name)
+            {
+                this.Token = tok;
+                this.Object = obj;
+                this.Name = name;
+            }
+
+            public override Token<TokenKind> Token {get; }
+
+            public Expr Object { get; }
+
+            public Expr Name { get; }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitProperty(this);
+        }
 
         public class Binary : Expr
         {

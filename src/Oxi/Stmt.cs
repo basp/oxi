@@ -13,6 +13,8 @@ namespace Oxi
             T VisitReturn(Return stmt);
 
             T VisitIfStmt(If stmt);
+
+            T VisitForStmt(For stmt);
         }
 
         public abstract Token<TokenKind> Token { get; }
@@ -67,13 +69,37 @@ namespace Oxi
                 visitor.VisitReturn(this);
         }
 
+        public class For : Stmt
+        {
+            public For(Token<TokenKind> tok, Expr id, Expr condition, Stmt body)
+            {
+                this.Token = tok;
+                this.Id = id;
+                this.Condition = condition;
+                this.Body = body;
+            }
+
+            public Expr Id { get; }
+
+            public Expr Condition { get; }
+
+            public Stmt Body { get; }
+
+            public override Token<TokenKind> Token { get; }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitForStmt(this);
+        }
+
         public class If : Stmt
         {
             public If(
+                Token<TokenKind> tok,
                 Expr[] conditions,
                 Stmt[] consequences,
                 Stmt alternative = null)
             {
+                this.Token = tok;
                 this.Conditions = conditions;
                 this.Consequences = consequences;
                 this.Alternative = alternative;

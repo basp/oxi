@@ -93,10 +93,32 @@ namespace Oxi
                 }
                 else if (char.IsDigit(next.Value))
                 {
+                    // See if we can lex an integer range (i.e. 1..5)
+                    // before trying to lex a floating point value
+                    var @int = Numerics.Integer(next.Location);
+                    if (@int.HasValue)
+                    {
+                        var op = TextParsers.DotDot(@int.Remainder);
+                        if (op.HasValue)
+                        {
+                            next = op.Remainder.ConsumeChar();
+
+                            yield return Result.Value(
+                                TokenKind.Integer,
+                                @int.Location,
+                                @int.Remainder);
+
+                            yield return Result.Value(
+                                TokenKind.DotDot,
+                                op.Location,
+                                op.Remainder);
+                        }
+                    }
+
                     var num = Numerics.Decimal(next.Location);
                     if (!num.HasValue)
                     {
-                        yield return Result.Empty<TokenKind>(num.Location);
+                        yield return Result.Empty<TokenKind>(next.Remainder);
                     }
 
                     var kind = int.TryParse(num.Value.ToStringValue(), out var _)

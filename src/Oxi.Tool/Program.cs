@@ -40,6 +40,12 @@
                         .Where(x => x.Kind != TokenKind.Comment)
                         .ToArray();
 
+                    Console.WriteLine("--- Tokens ".PadRight(60, '-'));
+                    foreach (var tok in tokens)
+                    {
+                        Console.WriteLine(tok);
+                    }
+
                     var list = new TokenList<TokenKind>(tokens);
                     var ast = Oxi.TokenParsers.Program.Parse(list);
 
@@ -47,6 +53,9 @@
                     {
                         if (enabled)
                         {
+                            Console.WriteLine();
+                            var name = printer.GetType().FullName;
+                            Console.WriteLine($"--- {name} ".PadRight(60, '-'));
                             Console.WriteLine(ast.Accept(printer));
                         }
                     }

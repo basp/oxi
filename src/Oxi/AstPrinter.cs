@@ -6,9 +6,9 @@ namespace Oxi
 
     public class AstPrinter : Expr.IVisitor<string>, Stmt.IVisitor<string>
     {
-        private int level = 0;
-
         private const string TILT = "<<< ?!?! TILT ?!?! >>>";
+
+        private int level = 0;
 
         public string VisitBinary(Expr.Binary expr) =>
             this.Parenthesize(expr.Op, expr.Left, expr.Right);
@@ -16,8 +16,8 @@ namespace Oxi
         public string VisitBlock(Stmt.Block block)
         {
             var buf = new StringBuilder();
-            buf.AppendLine(Indent("(block"));
-            Indented(() =>
+            buf.AppendLine(this.Indent("(block"));
+            this.Indented(() =>
             {
                 for (var i = 0; i < block.Body.Length - 1; i++)
                 {
@@ -27,39 +27,54 @@ namespace Oxi
                 buf.Append(block.Body[block.Body.Length - 1].Accept(this));
                 buf.Append(")");
             });
+
+            return buf.ToString();
+        }
+
+        public string VisitForStmt(Stmt.For stmt)
+        {
+            var buf = new StringBuilder();
+            buf.AppendLine(this.Indent("(for"));
+            this.Indented(() =>
+            {
+                buf.AppendLine(this.Indent(stmt.Condition.Accept(this)));
+                buf.Append(stmt.Body.Accept(this));
+                buf.Append(")");
+            });
+
             return buf.ToString();
         }
 
         public string VisitIfStmt(Stmt.If stmt)
         {
+            var buf = new StringBuilder();
             var arms = stmt.Conditions.Zip(
                 stmt.Consequences,
                 (cond, cons) => new { cond, cons })
                 .ToArray();
 
-            var buf = new StringBuilder();
-            buf.AppendLine(Indent("(if"));
-            Indented(() =>
+            void WriteArm(Expr cond, Stmt cons)
+            {
+                buf.AppendLine(this.Indent("(arm"));
+                this.Indented(() =>
+                {
+                    buf.AppendLine(this.Indent(cond.Accept(this)));
+                    buf.Append(cons.Accept(this));
+                });
+            }
+
+            buf.AppendLine(this.Indent("(if"));
+            this.Indented(() =>
             {
                 for (var i = 0; i < arms.Length - 1; i++)
                 {
                     var arm = arms[i];
-                    buf.AppendLine(Indent("(arm"));
-                    Indented(() =>
-                    {
-                        buf.AppendLine(Indent(arm.cond.Accept(this)));
-                        buf.Append(arm.cons.Accept(this));
-                    });
+                    WriteArm(arm.cond, arm.cons);
                     buf.AppendLine(")");
                 }
 
                 var last = arms[arms.Length - 1];
-                buf.AppendLine(Indent("(arm"));
-                Indented(() =>
-                {
-                    buf.AppendLine(Indent(last.cond.Accept(this)));
-                    buf.Append(last.cons.Accept(this));
-                });
+                WriteArm(last.cond, last.cons);
                 buf.Append(")");
             });
             buf.Append(")");
@@ -67,7 +82,7 @@ namespace Oxi
         }
 
         public string VisitExprStmt(Stmt.ExprStmt stmt) =>
-            Indent(this.Parenthesize("stmt", stmt.Expression));
+            this.Indent(this.Parenthesize("stmt", stmt.Expression));
 
         public string VisitFunctionCall(Expr.FunctionCall expr)
         {
@@ -124,10 +139,28 @@ namespace Oxi
             };
 
         public string VisitReturn(Stmt.Return stmt) =>
-            Indent($"(return {stmt.Expression.Accept(this)})");
+            this.Indent($"(return {stmt.Expression.Accept(this)})");
 
         public string VisitUnary(Expr.Unary expr) =>
             this.Parenthesize(expr.Op, expr.Right);
+
+        public string VisitRange(Expr.Range expr)
+        {
+            var buf = new StringBuilder();
+            buf.Append($"(range ");
+            buf.Append(expr.From.Accept(this));
+            buf.Append(" ");
+            buf.Append(expr.To.Accept(this));
+            buf.Append(")");
+            return buf.ToString();
+        }
+
+        public string VisitProperty(Expr.Property expr)
+        {
+            var obj = expr.Object.Accept(this);
+            var name = expr.Name.Accept(this);
+            return $"(prop {obj} {name})";
+        }
 
         private string Parenthesize(string name, params Expr[] exprs)
         {
@@ -152,6 +185,6 @@ namespace Oxi
         }
 
         private string Indent(string value) =>
-            string.Concat("".PadLeft(this.level * 2), value);
+            string.Concat(string.Empty.PadLeft(this.level * 2), value);
     }
 }

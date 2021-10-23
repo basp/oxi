@@ -34,6 +34,11 @@ namespace Oxi
         public IValue VisitIfStmt(Stmt.If stmt) =>
             throw new NotImplementedException();
 
+        public IValue VisitForStmt(Stmt.For stmt)
+        {
+            throw new NotImplementedException();
+        }
+
         public IValue VisitBinary(Expr.Binary expr)
         {
             var left = ThrowIfError(
@@ -86,6 +91,11 @@ namespace Oxi
             return ThrowIfError(result, expr.Token.Position);
         }
 
+        public IValue VisitRange(Expr.Range expr)
+        {
+            throw new NotImplementedException();
+        }
+
         public IValue VisitList(Expr.List expr)
         {
             var xs = expr.Elements.Select(x => x.Accept(this)).ToArray();
@@ -107,6 +117,11 @@ namespace Oxi
             return new Value.Boolean(true);
         }
 
+        public IValue VisitProperty(Expr.Property expr)
+        {
+            throw new NotImplementedException();
+        }
+        
         private static IValue ThrowIfError(IValue value, Position position)
         {
             if (value is Value.Error err)

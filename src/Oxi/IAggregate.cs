@@ -2,7 +2,7 @@ namespace Oxi
 {
     using System.Collections.Generic;
 
-    public interface IAggregate : IValue
+    public interface IAggregate : IValue, IEnumerable<IValue>
     {
         int Size { get; }
 

@@ -7,20 +7,34 @@ namespace Oxi
 
     public static class TokenParsers
     {
-        public static readonly TokenListParser<TokenKind, Expr> Expr =
-            Parse.Ref(() => Disjunction);
-
         public static readonly TokenListParser<TokenKind, Stmt> Program =
             Parse.Ref(() => Block);
+
+        private static readonly TokenListParser<TokenKind, Expr> Expr =
+            Parse.Ref(() => Assignment);
+
+        private static readonly Stmt Zero =
+            new Stmt.ExprStmt(
+                Token<TokenKind>.Empty,
+                new Expr.Literal(
+                    Token<TokenKind>.Empty,
+                    new Value.Integer(0)));
 
         private static readonly TokenListParser<TokenKind, Stmt> Block =
             from stmts in Parse
                 .OneOf(
                     Parse.Ref(() => ReturnStmt),
                     Parse.Ref(() => ExprStmt),
-                    Parse.Ref(() => IfStmt))
-                .AtLeastOnce()
-            select (Stmt)new Stmt.Block(stmts[0].Token, stmts);
+                    Parse.Ref(() => IfStmt),
+                    Parse.Ref(() => ForStmt))
+                .Many()
+            let tok = stmts.Length > 0
+                ? stmts[0].Token
+                : Token<TokenKind>.Empty
+            let body = stmts.Length > 0
+                ? stmts
+                : new Stmt[] { Zero }
+            select (Stmt)new Stmt.Block(tok, body);
 
         private static readonly TokenListParser<TokenKind, Stmt> ExprStmt =
             from expr in Expr
@@ -33,14 +47,8 @@ namespace Oxi
             let expr = ((Stmt.ExprStmt)stmt).Expression
             select (Stmt)new Stmt.Return(ret, expr);
 
-        private static TokenListParser<TokenKind, Conditional> IfThen(TokenKind kind) =>
-            from @if in Token.EqualTo(kind)
-            from cond in Parse.Ref(() => Grouping)
-            from cons in Block
-            select new Conditional(cond, cons);
-
-        private static TokenListParser<TokenKind, Stmt> OptionalElse =
-            (Token.EqualTo(TokenKind.Else).IgnoreThen(Block)).OptionalOrDefault();
+        private static readonly TokenListParser<TokenKind, Stmt> OptionalElse =
+            Token.EqualTo(TokenKind.Else).IgnoreThen(Block).OptionalOrDefault();
 
         private static readonly TokenListParser<TokenKind, Stmt> IfStmt =
             from @if in IfThen(TokenKind.If)
@@ -50,10 +58,28 @@ namespace Oxi
             let arms = new[] { @if }.Concat(elseIfs)
             let conditions = arms.Select(x => x.Condition).ToArray()
             let consequences = arms.Select(x => x.Consequence).ToArray()
-            select (Stmt)new Stmt.If(conditions, consequences, @else);
+            select (Stmt)new Stmt.If(
+                @if.Token,
+                conditions,
+                consequences,
+                @else);
 
-        private static readonly TokenListParser<TokenKind, Stmt> KeywordStmt =
-            ReturnStmt;
+        private static readonly TokenListParser<TokenKind, Expr> Range =
+            from lbrack in Token.EqualTo(TokenKind.LeftBracket)
+            from @from in Integer.Or(Object)
+            from sep in Token.EqualTo(TokenKind.DotDot)
+            from to in Integer.Or(Object)
+            from rbrack in Token.EqualTo(TokenKind.RightBracket)
+            select (Expr)new Expr.Range(lbrack, @from, to);
+
+        private static readonly TokenListParser<TokenKind, Stmt> ForStmt =
+            from @for in Token.EqualTo(TokenKind.For)
+            from id in Identifier
+            from @in in Token.EqualTo(TokenKind.In)
+            from cond in Range.Or(Grouping)
+            from body in Block
+            from endfor in Token.EqualTo(TokenKind.EndFor)
+            select (Stmt)new Stmt.For(@for, id, cond, body);
 
         private static readonly TokenListParser<TokenKind, Expr> True =
             Token
@@ -64,6 +90,9 @@ namespace Oxi
             Token
                 .EqualTo(TokenKind.False)
                 .Select(x => CreateBooleanLiteral(x, false));
+
+        private static readonly TokenListParser<TokenKind, Token<TokenKind>> Assign =
+            Token.EqualTo(TokenKind.Equal);
 
         private static readonly TokenListParser<TokenKind, Token<TokenKind>> Negate =
             Token.EqualTo(TokenKind.Minus);
@@ -205,25 +234,40 @@ namespace Oxi
                 Literal,
                 Identifier);
 
+        private static readonly TokenListParser<TokenKind, Expr> Unary =
+            from op in Negate.Or(Not)
+            from factor in Factor
+            select CreateUnary(op, factor);
+
         private static readonly TokenListParser<TokenKind, Expr> Operand =
-            (from op in Negate.Or(Not)
-             from factor in Factor
-             select CreateUnary(op, factor)).Or(Factor).Named("expression");
+            Unary.Or(Factor).Named("expression");
+
+        private static readonly TokenListParser<TokenKind, Expr> Property =
+            Parse.Chain(Dot, Operand, CreateProperty);
 
         private static readonly TokenListParser<TokenKind, Expr> Term =
-            Parse.Chain(Dot.Or(Multiply).Or(Divide).Or(Remainder), Operand, CreateBinary);
+            Parse.Chain(
+                Parse.OneOf(Multiply, Divide, Remainder),
+                Property,
+                CreateBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Comparand =
             Parse.Chain(Add.Or(Subtract), Term, CreateBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Comparison =
-            Parse.Chain(Lt.Or(Ne).Or(Gt).Or(Eq), Comparand, CreateBinary);
+            Parse.Chain(
+                Parse.OneOf(Lt, Le, Gt, Ge, Eq, Ne),
+                Comparand,
+                CreateBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Conjunction =
             Parse.Chain(And, Comparison, CreateBinary);
 
         private static readonly TokenListParser<TokenKind, Expr> Disjunction =
             Parse.Chain(Or, Conjunction, CreateBinary);
+
+        private static readonly TokenListParser<TokenKind, Expr> Assignment =
+            Parse.Chain(Assign, Disjunction, CreateBinary);
 
         private static Expr CreateIdentifier(Token<TokenKind> tok) =>
             new Expr.Identifier(tok, tok.ToStringValue());
@@ -249,14 +293,27 @@ namespace Oxi
         private static Expr CreateUnary(Token<TokenKind> op, Expr right) =>
             new Expr.Unary(op, op.ToStringValue(), right);
 
+        private static Expr CreateProperty(
+            Token<TokenKind> tok, 
+            Expr obj, 
+            Expr name) => new Expr.Property(tok, obj, name);
 
-        private class Conditional
+        private static TokenListParser<TokenKind, Arm> IfThen(TokenKind kind) =>
+            from @if in Token.EqualTo(kind)
+            from cond in Parse.Ref(() => Grouping)
+            from cons in Block
+            select new Arm(@if, cond, cons);
+
+        private class Arm
         {
-            public Conditional(Expr condition, Stmt consequence)
+            public Arm(Token<TokenKind> tok, Expr condition, Stmt consequence)
             {
+                this.Token = tok;
                 this.Condition = condition;
                 this.Consequence = consequence;
             }
+
+            public Token<TokenKind> Token { get; }
 
             public Expr Condition { get; }
 
