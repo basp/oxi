@@ -184,7 +184,7 @@ namespace Oxi
                     return Value.List.Empty;
                 }
 
-                var count = to - from;
+                var count = to - from + 1;
                 var xs = Enumerable
                     .Range(from, count)
                     .Select(x => new Value.Object(x))
@@ -202,7 +202,7 @@ namespace Oxi
                     return Value.List.Empty;
                 }
 
-                var count = to - from;
+                var count = to - from + 1;
                 var xs = Enumerable
                     .Range(from, count)
                     .Select(x => new Value.Integer(x))
@@ -220,6 +220,8 @@ namespace Oxi
                     CreateIntegerRange(x.Value, y.Value),
                 (Value.Object x, Value.Object y) =>
                     CreateObjectRange(x.Value, y.Value),
+                (Value.Error x, _) => x,
+                (_, Value.Error y) => y,
                 _ => Value.Error.INVARG,
             };
         }

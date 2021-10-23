@@ -183,6 +183,7 @@ namespace Oxi
 
         private static readonly TokenListParser<TokenKind, Expr> Literal =
             Parse.OneOf(
+                Range,
                 Object,
                 String,
                 Integer,

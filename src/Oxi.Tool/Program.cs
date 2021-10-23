@@ -60,8 +60,8 @@
                         }
                     }
 
-                    // var result = interpreter.Exec(ast);
-                    // Console.WriteLine($"=> {Stringify(result)}");
+                    var result = interpreter.Exec(ast);
+                    Console.WriteLine($"=> {Stringify(result)}");
                 }
                 catch (RuntimeException ex)
                 {
@@ -91,9 +91,9 @@
             Console.WriteLine(ex.Message);
         }
 
-        private static void Print(string src, RuntimeException exception)
+        private static void Print(string src, RuntimeException ex)
         {
-            var msg = exception.Position.Match(
+            var msg = ex.Position.Match(
                 pos =>
                 {
                     var line = src.Split(Environment.NewLine)[pos.Line - 1];
@@ -104,14 +104,14 @@
                         "(line {0}, column {1}): ",
                         pos.Line,
                         pos.Column);
-                    buf.AppendLine(exception.Message);
+                    buf.AppendLine(ex.Message);
                     buf.AppendLine(line);
                     buf.AppendLine(pointer);
                     return buf.ToString();
                 },
-                () => $"Runtime error: {exception.Message}\n");
-
+                () => $"Runtime error: {ex.Message}\n");
             Console.Write(msg);
+            Console.WriteLine(ex.StackTrace);
         }
 
         private static string Stringify(IValue value)

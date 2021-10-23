@@ -42,6 +42,12 @@ namespace Oxi
                 return new Value.List(xs);
             }
 
+            public override string ToString()
+            {
+                var xs = this.Value.Select(x => x.ToString());
+                return $"{{{string.Join(", ", xs)}}}";
+            }
+
             public IValue Concat(IAggregate value)
             {
                 throw new NotImplementedException();
