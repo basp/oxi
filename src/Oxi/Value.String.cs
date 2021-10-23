@@ -58,17 +58,12 @@ namespace Oxi
                 {
                     Value.String y =>
                         new Value.String(string.Concat(this.Value, y.Value)),
-                    _ => throw new NotSupportedException(),
+                    _ =>
+                        throw new NotSupportedException(),
                 };
 
             public IValue Cons(IValue value) =>
-                value switch
-                {
-                    IOrdinal y =>
-                        new Value.String(((Value.Character)y.Chr()).Value + this.Value),
-                    _ =>
-                        throw new RuntimeException("some kind of ordinal mishap"),
-                };
+                throw new NotImplementedException();
 
             public IAggregate Drop(int n) =>
                 new Value.String(this.Value.Substring(n));

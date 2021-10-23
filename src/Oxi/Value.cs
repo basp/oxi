@@ -19,15 +19,15 @@ namespace Oxi
         public abstract IValue Clone();
 
         public virtual IValue Not() =>
-            new Value.Boolean(!this.IsTruthy);
+            Value.Boolean.Get(!this.IsTruthy);
 
         public virtual IValue And(IValue other) =>
-            new Value.Boolean(this.IsTruthy && other.IsTruthy);
+            Value.Boolean.Get(this.IsTruthy && other.IsTruthy);
 
         public virtual IValue Or(IValue other) =>
-            new Value.Boolean(this.IsTruthy || other.IsTruthy);
+            Value.Boolean.Get(this.IsTruthy || other.IsTruthy);
 
         public virtual IValue Xor(IValue other) =>
-            new Value.Boolean(this.IsTruthy ^ other.IsTruthy);
+            Value.Boolean.Get(this.IsTruthy ^ other.IsTruthy);
     }
 }

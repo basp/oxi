@@ -4,7 +4,11 @@ namespace Oxi
     {
         public class Boolean : Value, IOrdinal
         {
-            public Boolean(bool value)
+            public static readonly IValue True = new Boolean(true);
+
+            public static readonly IValue False = new Boolean(false);
+
+            private Boolean(bool value)
             {
                 this.Value = value;
             }
@@ -16,6 +20,8 @@ namespace Oxi
             public bool Value { get; }
 
             public override bool IsTruthy => this.Value;
+
+            public static IValue Get(bool value) => value ? True : False;
 
             public override IValue Clone() => new Boolean(this.Value);
 

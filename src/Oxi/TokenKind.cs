@@ -8,6 +8,9 @@ namespace Oxi
         Comment,
 
         // one character tokens
+        [Token(Example = "^")]
+        Caret,
+
         [Token(Example = "(")]
         LeftParen,
 
@@ -63,28 +66,28 @@ namespace Oxi
         [Token(Example = "&")]
         Ampersand,
 
-        [Token(Example = "&&")]
+        [Token(Category = "operator", Example = "&&")]
         AmpersandAmpersand,
 
-        [Token(Example = "!")]
+        [Token(Category = "operator", Example = "!")]
         Bang,
 
-        [Token(Example = "!=")]
+        [Token(Category = "operator", Example = "!=")]
         BangEqual,
 
         [Token(Example = "|")]
         Bar,
 
-        [Token(Example = "||")]
+        [Token(Category = "operator", Example = "||")]
         BarBar,
 
-        [Token(Example = ".")]
+        [Token(Category = "operator", Example = ".")]
         Dot,
 
         [Token(Category = "operator", Example = "..")]
         DotDot,
 
-        [Token(Example = "=")]
+        [Token(Category = "operator", Example = "=")]
         Equal,
 
         [Token(Category = "operator", Example = "==")]
@@ -93,13 +96,13 @@ namespace Oxi
         [Token(Category = "operator", Example = "=>")]
         EqualGreater,
 
-        [Token(Example = ">")]
+        [Token(Category = "operator", Example = ">")]
         Greater,
 
         [Token(Category = "operator", Example = ">=")]
         GreaterEqual,
 
-        [Token(Example = "<")]
+        [Token(Category = "operator", Example = "<")]
         Less,
 
         [Token(Category = "operator", Example = "<=")]

@@ -9,6 +9,13 @@ namespace Oxi
     {
         public class List : Value, IValue<IList<IValue>>, IAggregate
         {
+            public static readonly IValue Empty = new List();
+
+            public List()
+            {
+                this.Value = new IValue[0];
+            }
+
             public List(IList<IValue> value)
             {
                 this.Value = value;

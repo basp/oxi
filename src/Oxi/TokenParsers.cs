@@ -293,23 +293,32 @@ namespace Oxi
         private static Expr CreateIdentifier(Token<TokenKind> tok) =>
             new Expr.Identifier(tok, tok.ToStringValue());
 
-        private static Expr CreateObjectLiteral(Token<TokenKind> tok, int value) =>
-            new Expr.Literal(tok, new Value.Object(value));
+        private static Expr CreateObjectLiteral(
+            Token<TokenKind> tok,
+            int value) => new Expr.Literal(tok, new Value.Object(value));
 
-        private static Expr CreateIntegerLiteral(Token<TokenKind> tok, int value) =>
-            new Expr.Literal(tok, new Value.Integer(value));
+        private static Expr CreateIntegerLiteral(
+            Token<TokenKind> tok,
+            int value) => new Expr.Literal(tok, new Value.Integer(value));
 
-        private static Expr CreateFloatLiteral(Token<TokenKind> tok, double value) =>
-            new Expr.Literal(tok, new Value.Float(value));
+        private static Expr CreateFloatLiteral(
+            Token<TokenKind> tok,
+            double value) => new Expr.Literal(tok, new Value.Float(value));
 
-        private static Expr CreateStringLiteral(Token<TokenKind> tok, string value) =>
-            new Expr.Literal(tok, new Value.String(value));
+        private static Expr CreateStringLiteral(
+            Token<TokenKind> tok,
+            string value) => new Expr.Literal(tok, new Value.String(value));
 
-        private static Expr CreateBooleanLiteral(Token<TokenKind> tok, bool value) =>
-            new Expr.Literal(tok, new Value.Boolean(value));
+        private static Expr CreateBooleanLiteral(
+            Token<TokenKind> tok,
+            bool value) => new Expr.Literal(
+                tok,
+                value ? Value.Boolean.True : Value.Boolean.False);
 
-        private static Expr CreateBinary(Token<TokenKind> op, Expr left, Expr right) =>
-            new Expr.Binary(op, left, op.ToStringValue(), right);
+        private static Expr CreateBinary(
+            Token<TokenKind> op,
+            Expr left,
+            Expr right) => new Expr.Binary(op, left, op.ToStringValue(), right);
 
         private static Expr CreateUnary(Token<TokenKind> op, Expr right) =>
             new Expr.Unary(op, op.ToStringValue(), right);
