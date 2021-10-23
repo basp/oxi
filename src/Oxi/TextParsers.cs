@@ -20,7 +20,7 @@ namespace Oxi
         public static readonly TextParser<TokenKind> GreaterEqual =
             Span.EqualTo(">=").Value(TokenKind.GreaterEqual);
 
-        public static readonly TextParser<TokenKind> Arrow = 
+        public static readonly TextParser<TokenKind> Arrow =
             Span.EqualTo("=>").Value(TokenKind.EqualGreater);
 
         public static readonly TextParser<TokenKind> CompoundOperator =

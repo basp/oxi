@@ -63,7 +63,7 @@
                 this.Name = name;
             }
 
-            public override Token<TokenKind> Token {get; }
+            public override Token<TokenKind> Token { get; }
 
             public Expr Object { get; }
 

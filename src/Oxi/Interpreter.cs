@@ -121,7 +121,7 @@ namespace Oxi
         {
             throw new NotImplementedException();
         }
-        
+
         private static IValue ThrowIfError(IValue value, Position position)
         {
             if (value is Value.Error err)

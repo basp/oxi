@@ -6,7 +6,7 @@ namespace Oxi
 
     public class AstPrinter : Expr.IVisitor<string>, Stmt.IVisitor<string>
     {
-        private const string TILT = "<<< ?!?! TILT ?!?! >>>";
+        private const string TILT = "*** TILT TILT TILT ***";
 
         private int level = 0;
 
@@ -77,6 +77,18 @@ namespace Oxi
                 WriteArm(last.cond, last.cons);
                 buf.Append(")");
             });
+
+            if (stmt.Alternative != null)
+            {
+                this.Indented(() =>
+                {
+                    buf.AppendLine();
+                    buf.AppendLine(this.Indent("(alt"));
+                    this.Indented(() => buf.Append(stmt.Alternative.Accept(this)));
+                    buf.Append(")");
+                });
+            }
+
             buf.Append(")");
             return buf.ToString();
         }
@@ -135,7 +147,7 @@ namespace Oxi
                 Value.Float x => x.Value.ToString(Config.CultureInfo),
                 Value.Boolean x => x.Value.ToString(Config.CultureInfo),
                 Value.Object x => $"#{x.Value}",
-                _ => TILT,
+                _ => throw new NotImplementedException(TILT),
             };
 
         public string VisitReturn(Stmt.Return stmt) =>

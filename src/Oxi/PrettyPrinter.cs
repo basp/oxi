@@ -61,7 +61,7 @@ namespace Oxi
             var obj = call.Object.Accept(this);
             var verb = call.Verb.Accept(this);
             var args = call.Arguments.Select(x => x.Accept(this));
-            return $"{obj}:{verb}({string.Join(",", args)})";
+            return $"{obj}:{verb}({string.Join(", ", args)})";
         }
 
         public string VisitGrouping(Expr.Grouping expr)
@@ -106,6 +106,18 @@ namespace Oxi
             var buf = new StringBuilder();
             buf.AppendLine(this.Indent($"if {head.cond.Accept(this)}"));
             this.Indented(() => buf.Append(head.cons.Accept(this)));
+            foreach (var arm in tail)
+            {
+                buf.AppendLine(this.Indent($"elseif {arm.cond.Accept(this)}"));
+                this.Indented(() => buf.Append(arm.cons.Accept(this)));
+            }
+
+            if (stmt.Alternative != null)
+            {
+                buf.AppendLine(this.Indent("else"));
+                this.Indented(() => buf.Append(stmt.Alternative.Accept(this)));
+            }
+
             buf.Append(this.Indent("endif"));
             return buf.ToString();
         }

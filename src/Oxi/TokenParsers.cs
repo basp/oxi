@@ -225,10 +225,31 @@ namespace Oxi
                     Token.EqualTo(TokenKind.RightParen))
             select (Expr)new Expr.VerbCall(obj.Token, obj, verb, args);
 
+        private static readonly TokenListParser<TokenKind, Expr> DollarVerb =
+            from dollar in Token.EqualTo(TokenKind.Dollar)
+            from verb in Identifier
+            from args in Expr
+                .ManyDelimitedBy(Token.EqualTo(TokenKind.Comma))
+                .Between(
+                    Token.EqualTo(TokenKind.LeftParen),
+                    Token.EqualTo(TokenKind.RightParen))
+            select (Expr)new Expr.VerbCall(
+                dollar,
+                CreateObjectLiteral(dollar, 0),
+                verb,
+                args);
+
+        private static readonly TokenListParser<TokenKind, Expr> DollarProperty =
+            from dollar in Token.EqualTo(TokenKind.Dollar)
+            from id in Identifier
+            select CreateProperty(dollar, CreateObjectLiteral(dollar, 0), id);
+
         private static readonly TokenListParser<TokenKind, Expr> Factor =
             Parse.OneOf(
                 FunctionCall.Try(),
                 VerbCall.Try(),
+                DollarVerb.Try(),
+                DollarProperty,
                 List,
                 Grouping,
                 Literal,
@@ -294,8 +315,8 @@ namespace Oxi
             new Expr.Unary(op, op.ToStringValue(), right);
 
         private static Expr CreateProperty(
-            Token<TokenKind> tok, 
-            Expr obj, 
+            Token<TokenKind> tok,
+            Expr obj,
             Expr name) => new Expr.Property(tok, obj, name);
 
         private static TokenListParser<TokenKind, Arm> IfThen(TokenKind kind) =>
