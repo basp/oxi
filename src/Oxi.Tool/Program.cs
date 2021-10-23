@@ -60,6 +60,8 @@
                         }
                     }
 
+                    Console.WriteLine();
+                    Console.WriteLine("--- Result ".PadRight(60, '-'));
                     var result = interpreter.Exec(ast);
                     Console.WriteLine($"=> {Stringify(result)}");
                 }

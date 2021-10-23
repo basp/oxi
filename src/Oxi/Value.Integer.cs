@@ -45,6 +45,9 @@ namespace Oxi
                 return this.Value == other.Value;
             }
 
+            public override IValue Negate() =>
+                new Value.Integer(-this.Value);
+
             public override IValue And(IValue value) =>
                 value switch
                 {

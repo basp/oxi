@@ -98,31 +98,20 @@ namespace Oxi
 
         public IValue VisitBinary(Expr.Binary expr)
         {
-            // Assign operation needs special treatment
+            // assign is special
             if (expr.Op == "=")
             {
-                var scope = this.env.Peek();
-                var id = expr.Left switch
-                {
-                    Expr.Identifier x => x.Value,
-                    _ => throw new InvalidOperationException(),
-                };
-
-                var value = ThrowIfError(
-                    expr.Right.Accept(this),
-                    expr.Right.Token.Position);
-
-                scope[id] = value;
-                return value;
+                return this.Assign(expr);
             }
 
             var left = ThrowIfError(
                 this.Eval(expr.Left),
                 expr.Left.Token.Position);
 
-            // Short-circuit `and` operator when left side is false
             if (expr.Op == "&&" && !left.IsTruthy)
             {
+                // short-circuit `and` operator
+                // don't evaluale right-hand side when left is false
                 return Value.Boolean.Get(false);
             }
 
@@ -166,7 +155,7 @@ namespace Oxi
             IValue result = expr.Op switch
             {
                 "!" => Value.Boolean.Get(!right.IsTruthy),
-                "-" => throw new NotImplementedException(),
+                "-" => right.Negate(),
                 _ => throw new RuntimeException(
                     $"invalid unary operation `{expr.Op}`",
                     expr.Token.Position),
@@ -281,6 +270,8 @@ namespace Oxi
 
             return value;
         }
+
+        private static IValue Negate(IValue value) => value.Negate();
 
         private static IValue And(IValue left, IValue right) =>
             Value.Boolean.Get(left.IsTruthy && right.IsTruthy);
@@ -400,6 +391,23 @@ namespace Oxi
                     Value.Boolean.Get(x.OrdinalValue >= y.OrdinalValue),
                 _ => Value.Error.TYPE,
             };
+
+        private IValue Assign(Expr.Binary expr)
+        {
+            var scope = this.env.Peek();
+            var id = expr.Left switch
+            {
+                Expr.Identifier x => x.Value,
+                _ => throw new InvalidOperationException(),
+            };
+
+            var value = ThrowIfError(
+                expr.Right.Accept(this),
+                expr.Right.Token.Position);
+
+            scope[id] = value;
+            return value;
+        }
 
         private void Scoped(Action<Environment> act)
         {

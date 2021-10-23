@@ -6,6 +6,9 @@ namespace Oxi
 
         public abstract bool IsTruthy { get; }
 
+        public virtual IValue Negate() =>
+            Value.Boolean.Get(!this.IsTruthy);
+
         public static bool IsZero(IValue value) =>
             value switch
             {

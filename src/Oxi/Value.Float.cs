@@ -42,6 +42,9 @@ namespace Oxi
                 return this.Value == other.Value;
             }
 
+            public override IValue Negate() =>
+                new Value.Float(-this.Value);
+
             public IValue Add(IValue value) =>
                 value switch
                 {
