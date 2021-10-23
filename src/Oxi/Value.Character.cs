@@ -9,15 +9,13 @@ namespace Oxi
                 this.Value = value;
             }
 
-            public override ValueKind Kind => ValueKind.Character;
-
             public char Value { get; }
 
             public int OrdinalValue => (int)this.Value;
 
             public override bool IsTruthy => this.Value != default(char);
 
-            public IValue Chr() => new Value.Character(this.Value);
+            public override ValueKind Kind => ValueKind.Character;
 
             public override IValue Clone() => new Value.Character(this.Value);
 
@@ -41,6 +39,8 @@ namespace Oxi
 
                 return this.Value == other.Value;
             }
+
+            public IValue Chr() => new Value.Character(this.Value);
 
             public IValue Max(IOrdinal value) =>
                 this.OrdinalValue > value.OrdinalValue

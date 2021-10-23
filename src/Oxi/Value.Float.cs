@@ -20,7 +20,8 @@ namespace Oxi
 
             public override IValue Clone() => new Float(this.Value);
 
-            public override string ToString() => this.Value.ToString();
+            public override string ToString() =>
+                this.Value.ToString(Config.CultureInfo);
 
             public override int GetHashCode() =>
                 System.HashCode.Combine(this.Kind, this.Value.GetHashCode());

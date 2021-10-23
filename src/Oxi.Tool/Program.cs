@@ -79,7 +79,7 @@
             if (ex.ErrorPosition.HasValue)
             {
                 var line = src.Split(Environment.NewLine)[ex.ErrorPosition.Line - 1];
-                var pointer = "^".PadLeft(ex.ErrorPosition.Column);
+                var pointer = "^".PadLeft(ex.ErrorPosition.Column, '-');
                 var buf = new StringBuilder();
                 buf.AppendLine(ex.Message);
                 buf.AppendLine(line);
@@ -97,7 +97,7 @@
                 pos =>
                 {
                     var line = src.Split(Environment.NewLine)[pos.Line - 1];
-                    var pointer = "^".PadLeft(pos.Column);
+                    var pointer = "^".PadLeft(pos.Column, '-');
                     var buf = new StringBuilder();
                     buf.Append("Runtime error ");
                     buf.AppendFormat(

@@ -66,9 +66,9 @@ namespace Oxi
 
         private static readonly TokenListParser<TokenKind, Expr> Range =
             from lbrack in Token.EqualTo(TokenKind.LeftBracket)
-            from @from in Integer.Or(Object)
+            from @from in Expr
             from sep in Token.EqualTo(TokenKind.DotDot)
-            from to in Integer.Or(Object)
+            from to in Expr
             from rbrack in Token.EqualTo(TokenKind.RightBracket)
             select (Expr)new Expr.Range(lbrack, @from, to);
 

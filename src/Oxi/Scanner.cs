@@ -93,7 +93,7 @@ namespace Oxi
                 }
                 else if (char.IsDigit(next.Value))
                 {
-                    // See if we can lex an integer range (i.e. 1..5)
+                    // First try to lex an integer range (i.e. 1..5)
                     // before trying to lex a floating point value
                     var @int = Numerics.Integer(next.Location);
                     if (@int.HasValue)
