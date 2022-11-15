@@ -64,7 +64,34 @@ Let's invesitage a bit closer. We use a `for` statement:
 => "frotz"
 ```
 
-And this behaves as expected. The loop is executed 10 times with a result of "frotz". Maybe a better test would be:
+You might be confused **why a statement has a result** and this is the confusing thing: a statement can be an expression as well depending on how you define the rules. In this case, the loop is executed 10 times and each time with a result of "frotz". The result of the `for` statement is defined to be the result of the final expression in the body of the `for` loop.
+
+This should make sense until you realize: "the body of a `for` loop is just a bunch of statements, how can a statement produce an expression?".
+
+Well this is where the `;` (semicolon) operator steps in. If you have an expression, *any* expression, then you can make it into a statement by just applying the `;` operator. Mathematically it would look like:
+```
+next = ;(expr)
+```
+
+But in an imperative language we like to write things as a sequence so we tend to omit the state. The thing that we omit here is commonly known as *global state* but we will come back to that later.
+
+So we just write a bit more conveniently:
+```
+expr1;
+expr2;
+```
+
+Conceptually, what this does is create one big function where each *expr* is executed in sequence and the results of one influence the next ones.
+
+However, an *expr* cannot modify the world - it can only produce a value based on known inputs. So in order to have an expression *influence* the world we can turn it into a statement by using the `;` operator.
+
+This works because an expression only produces a value and **should not have any side-effects**. If the expression is to produce any side-effects then by definition it is no longer an expression but a statement instead.
+
+> This also does not work because the tokenizer and parser team are quite stupid and do not have the expertise right now to properly cater for all the use-cases that users come up with.
+
+Anyway, you should not put semicolons wherever you feel like they make sense since they do impact the parser (in some bad ways).
+
+If you do this then you'll see that the result of the `for` is the result of the last expression in the body of the loop.
 ```
 > for x in [0 .. 10] x; endfor;
 => 10;
