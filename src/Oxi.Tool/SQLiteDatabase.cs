@@ -5,11 +5,11 @@ namespace Oxi.Tool;
 
 public class SQLiteDatabase : IDatabase
 {
-    private readonly string path;
+    private readonly string connectionString;
 
     public SQLiteDatabase(string path)
     {
-        this.path = path;
+        this.connectionString = $"Data Source={path}";
     }
 
     public void AddProperty(int id, string name, IValue value)
@@ -19,7 +19,13 @@ public class SQLiteDatabase : IDatabase
 
     public int Create()
     {
-        throw new System.NotImplementedException();
+        var id = this.GetMaxObject() + 1;
+        using var conn = new SqliteConnection(this.connectionString);
+        conn.Open();
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = $"insert into objects values ({id})";
+        cmd.ExecuteNonQuery();
+        return id;
     }
 
     public void DeleteProperty(int id, string name)
@@ -29,8 +35,7 @@ public class SQLiteDatabase : IDatabase
 
     public int GetMaxObject()
     {
-        var connStr = $"Data Source={this.path}";
-        using var conn = new SqliteConnection(connStr);
+        using var conn = new SqliteConnection(this.connectionString);
         conn.Open();
         var cmd = conn.CreateCommand();
         cmd.CommandText = @"select max(id) from objects";

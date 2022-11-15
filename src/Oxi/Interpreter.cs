@@ -40,9 +40,14 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
             ["valid"] = this.runtime.Valid,
             ["pickle"] = TestSerialize,
             ["unpickle"] = TestDeserialize,
-            ["maxobject"] = xs =>
+            ["maxobject"] = _ =>
             {
                 var x = this.db.GetMaxObject();
+                return new Value.Object(x);
+            },
+            ["create"] = _ =>
+            {
+                var x = this.db.Create();
                 return new Value.Integer(x);
             },
         };
