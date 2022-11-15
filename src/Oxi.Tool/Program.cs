@@ -21,7 +21,8 @@ internal class Program
             Args.InvokeAction<Program>(args);
         }
 
-        var interpreter = new Interpreter();
+        var db = new SQLiteDatabase(@"d:\temp\moo.db");
+        var interpreter = new Interpreter(db);
         var scanner = new Scanner();
         var printers = new Dictionary<Stmt.IVisitor<string>, bool>
         {

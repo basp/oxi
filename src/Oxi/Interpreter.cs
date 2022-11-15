@@ -8,21 +8,14 @@ using Superpower.Model;
 
 public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
 {
-    private static readonly IRuntime Runtime = new Runtime();
+    private readonly IRuntime runtime = new Runtime();
 
-    private static readonly IDictionary<string, Func<IValue[], IValue>> BuiltIn =
-        new Dictionary<string, Func<IValue[], IValue>>()
-        {
-            ["typeof"] = Runtime.TypeOf,
-            ["valid"] = Runtime.Valid,
-            ["pickle"] = TestSerialize,
-            ["unpickle"] = TestDeserialize,
-        };
+    private readonly IDictionary<string, Func<IValue[], IValue>> bi;
 
     private readonly Stack<Environment> env =
         new Stack<Environment>(new[]
         {
-            // TODO: Move this somewhere else
+            // global scope (might need to move this later)
             new Environment()
             {
                 ["INT"] = new Value.Integer(ValueKind.Integer),
@@ -34,6 +27,26 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
                 ["E_PROPNF"] = new Value.Integer(1),
             },
         });
+
+    private readonly IDatabase db;
+
+    public Interpreter(IDatabase db)
+    {
+        this.db = db;
+
+        this.bi = new Dictionary<string, Func<IValue[], IValue>>()
+        {
+            ["typeof"] = this.runtime.TypeOf,
+            ["valid"] = this.runtime.Valid,
+            ["pickle"] = TestSerialize,
+            ["unpickle"] = TestDeserialize,
+            ["maxobject"] = xs =>
+            {
+                var x = this.db.GetMaxObject();
+                return new Value.Integer(x);
+            },
+        };
+    }
 
     public IValue Exec(Stmt stmt)
     {
@@ -272,7 +285,7 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
     public IValue VisitFunctionCall(Expr.FunctionCall expr)
     {
         var id = (Expr.Identifier)expr.Function;
-        if (BuiltIn.TryGetValue(id.Value, out var fn))
+        if (bi.TryGetValue(id.Value, out var fn))
         {
             var args = expr.Arguments
                 .Select(x => x.Accept(this))
@@ -281,6 +294,7 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
             return fn(args);
         }
 
+        // invalid built-in function name
         throw new NotImplementedException(id.Value);
     }
 

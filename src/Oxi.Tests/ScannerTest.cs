@@ -11,15 +11,15 @@ public class ScannerTest
         var input = "=+(){},;";
         var tests = new[]
         {
-                (TokenKind.Equal, "="),
-                (TokenKind.Plus, "+"),
-                (TokenKind.LeftParen, "("),
-                (TokenKind.RightParen, ")"),
-                (TokenKind.LeftBrace, "{"),
-                (TokenKind.RightBrace, "}"),
-                (TokenKind.Comma, ","),
-                (TokenKind.Semicolon, ";"),
-            };
+            (TokenKind.Equal, "="),
+            (TokenKind.Plus, "+"),
+            (TokenKind.LeftParen, "("),
+            (TokenKind.RightParen, ")"),
+            (TokenKind.LeftBrace, "{"),
+            (TokenKind.RightBrace, "}"),
+            (TokenKind.Comma, ","),
+            (TokenKind.Semicolon, ";"),
+        };
 
         var scanner = new Scanner();
         var tokens = scanner.Tokenize(input).ToArray();

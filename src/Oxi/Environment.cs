@@ -4,6 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
+// we might need to support nested environments to
+// properly support the fork statement later
 public class Environment : IDictionary<string, IValue>
 {
     private readonly IDictionary<string, IValue> vars =

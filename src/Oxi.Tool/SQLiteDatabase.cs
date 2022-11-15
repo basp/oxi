@@ -1,3 +1,6 @@
+using System;
+using Microsoft.Data.Sqlite;
+
 namespace Oxi.Tool;
 
 public class SQLiteDatabase : IDatabase
@@ -26,7 +29,12 @@ public class SQLiteDatabase : IDatabase
 
     public int GetMaxObject()
     {
-        throw new System.NotImplementedException();
+        var connStr = $"Data Source={this.path}";
+        using var conn = new SqliteConnection(connStr);
+        conn.Open();
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = @"select max(id) from objects";
+        return Convert.ToInt32(cmd.ExecuteScalar());
     }
 
     public string[] GetProperties(int id)
