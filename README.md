@@ -24,4 +24,4 @@ endfork
 Expression must evaluate to an integer. This will be the number of seconds that the forked task will be delayed. The identifier is optional. It will have the task id of the task associated with the forked block. This is useful for killing the forked starts before it starts.
 
 ### notes
-* Range parsing is a bit iffy, something like `[0..maxobject()]` will likely confuse the parser since it will succeed tokenizing `0.` as a floating point token and then it will not have a clue with the rest of the text span. Work arounds are to use either `[(0)..(maxobject())]` or (slightly cleaner) `[0 .. maxobject()]` instead.
+* Range parsing is a bit iffy, something like `[0..maxobject()]` will likely confuse the parser since it will succeed tokenizing `0.` as a floating point token and then it will not have a clue with the rest of the text span. Work arounds are to use either `[(0)..(maxobject())]` or (slightly cleaner) `[0 .. maxobject()]` instead (with spaces around the range (`..`) operator).
