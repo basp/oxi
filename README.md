@@ -81,6 +81,8 @@ expr1;
 expr2;
 ```
 
+In this case we *implicitly* use the *global* environment by virtue of the `;` operator which allows us to modify state instead of just producing values.
+
 Conceptually, what this does is create one big function where each *expr* is executed in sequence and the results of one influence the next ones.
 
 However, an *expr* cannot modify the world - it can only produce a value based on known inputs. So in order to have an expression *influence* the world we can turn it into a statement by using the `;` operator.
