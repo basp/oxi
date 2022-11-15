@@ -50,6 +50,60 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
                 var x = this.db.Create();
                 return new Value.Integer(x);
             },
+            ["recycle"] = args =>
+            {
+                if (args.Length < 1)
+                {
+                    return Value.Error.INVARG;
+                }
+
+                if (args[0] is not Value.Object id)
+                {
+                    return Value.Error.INVARG;
+                }
+
+                var x = this.db.Recycle(id.Value);
+                return new Value.Integer(x);
+            },
+            ["add_property"] = args =>
+            {
+                if (args.Length < 2)
+                {
+                    return Value.Error.INVARG;
+                }
+
+                if (args[0] is not Value.Object id)
+                {
+                    return Value.Error.INVARG;
+                }
+
+                if (args[1] is not Value.String name)
+                {
+                    return Value.Error.INVARG;
+                }
+
+                this.db.AddProperty(id.Value, name.Value);
+                return new Value.Integer(1);
+            },
+            ["properties"] = args =>
+            {
+                if (args.Length < 1)
+                {
+                    return Value.Error.INVARG;
+                }
+
+                if (args[0] is not Value.Object id)
+                {
+                    return Value.Error.INVARG;
+                }
+
+                var names = this.db.GetProperties(id.Value);
+                var xs = names
+                    .Select(x => new Value.String(x))
+                    .ToArray();
+
+                return new Value.List(xs);
+            },
         };
     }
 
@@ -290,7 +344,7 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
     public IValue VisitFunctionCall(Expr.FunctionCall expr)
     {
         var id = (Expr.Identifier)expr.Function;
-        if (bi.TryGetValue(id.Value, out var fn))
+        if (this.bi.TryGetValue(id.Value, out var fn))
         {
             var args = expr.Arguments
                 .Select(x => x.Accept(this))

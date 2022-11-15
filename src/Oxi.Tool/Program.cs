@@ -21,13 +21,16 @@ internal class Program
             Args.InvokeAction<Program>(args);
         }
 
-        var db = new SQLiteDatabase(@"d:\temp\moo.db");
+        var db = new SqliteDatabase(@"d:\temp\moo.db");
         var interpreter = new Interpreter(db);
         var scanner = new Scanner();
+
+        var printTokens = true;
+
         var printers = new Dictionary<Stmt.IVisitor<string>, bool>
         {
             [new AstPrinter()] = true,
-            [new PrettyPrinter()] = false,
+            [new PrettyPrinter()] = true,
         };
 
         while (true)
@@ -41,10 +44,13 @@ internal class Program
                     .Where(x => x.Kind != TokenKind.Comment)
                     .ToArray();
 
-                Console.WriteLine("---- Tokens ".PadRight(60, '-'));
-                foreach (var tok in tokens)
+                if (printTokens)
                 {
-                    Console.WriteLine(tok);
+                    Console.WriteLine("---- Scanner ".PadRight(60, '-'));
+                    foreach (var tok in tokens)
+                    {
+                        Console.WriteLine(tok);
+                    }
                 }
 
                 var list = new TokenList<TokenKind>(tokens);
