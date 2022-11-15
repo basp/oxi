@@ -19,6 +19,11 @@ namespace Oxi
 
             public override IValue Clone() =>
                 new Value.Return(this.Value);
+
+            public override void Accept(IValue.IVisitor visitor)
+            {
+                throw new System.NotImplementedException();
+            }
         }
     }
 }

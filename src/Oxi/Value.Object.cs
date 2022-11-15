@@ -48,6 +48,9 @@ namespace Oxi
             public override IValue Clone() =>
                 new Value.Object(this.Value);
 
+            public override void Accept(IValue.IVisitor visitor) =>
+                visitor.VisitObject(this);
+
             public IValue Ord() =>
                 new Value.Integer(this.OrdinalValue);
 

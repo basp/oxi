@@ -59,7 +59,6 @@ namespace Oxi
                 }
             });
 
-            
             return buf.ToString();
         }
 

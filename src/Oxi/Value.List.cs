@@ -13,7 +13,7 @@ namespace Oxi
 
             public List()
             {
-                this.Value = new IValue[0];
+                this.Value = new List<IValue>();
             }
 
             public List(IList<IValue> value)
@@ -41,6 +41,9 @@ namespace Oxi
                 var xs = this.Value.Select(x => x.Clone()).ToList();
                 return new Value.List(xs);
             }
+
+            public override void Accept(IValue.IVisitor visitor) =>
+                visitor.VisitList(this);
 
             public override string ToString()
             {

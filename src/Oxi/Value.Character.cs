@@ -19,6 +19,9 @@ namespace Oxi
 
             public override IValue Clone() => new Value.Character(this.Value);
 
+            public override void Accept(IValue.IVisitor visitor) =>
+                visitor.VisitCharacter(this);
+
             public override string ToString() => $"'{this.Value}";
 
             public override int GetHashCode() =>

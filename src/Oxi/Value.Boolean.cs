@@ -25,6 +25,9 @@ namespace Oxi
 
             public override IValue Clone() => new Boolean(this.Value);
 
+            public override void Accept(IValue.IVisitor visitor) =>
+                visitor.VisitBoolean(this);
+
             public override string ToString() =>
                 this.Value.ToString().ToLower();
 

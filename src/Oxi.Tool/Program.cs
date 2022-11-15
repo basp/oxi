@@ -40,7 +40,7 @@
                         .Where(x => x.Kind != TokenKind.Comment)
                         .ToArray();
 
-                    Console.WriteLine("--- Tokens ".PadRight(60, '-'));
+                    Console.WriteLine("---- Tokens ".PadRight(60, '-'));
                     foreach (var tok in tokens)
                     {
                         Console.WriteLine(tok);
@@ -55,13 +55,13 @@
                         {
                             Console.WriteLine();
                             var name = printer.GetType().FullName;
-                            Console.WriteLine($"--- {name} ".PadRight(60, '-'));
+                            Console.WriteLine($"---- {name} ".PadRight(60, '-'));
                             Console.WriteLine(ast.Accept(printer));
                         }
                     }
 
                     Console.WriteLine();
-                    Console.WriteLine("--- Interpreter ".PadRight(60, '-'));
+                    Console.WriteLine("---- Interpreter ".PadRight(60, '-'));
                     var result = interpreter.Exec(ast);
                     Console.WriteLine($"=> {Stringify(result)}");
                 }
@@ -85,7 +85,7 @@
             if (ex.ErrorPosition.HasValue)
             {
                 var line = src.Split(Environment.NewLine)[ex.ErrorPosition.Line - 1];
-                var pointer = "^".PadLeft(ex.ErrorPosition.Column, '-');
+                var pointer = "^".PadLeft(ex.ErrorPosition.Column, ' ');
                 var buf = new StringBuilder();
                 buf.AppendLine(ex.Message);
                 buf.AppendLine(line);
