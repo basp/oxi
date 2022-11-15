@@ -31,6 +31,38 @@ namespace Oxi
             return buf.ToString();
         }
 
+        public string VisitTryStmt(Stmt.Try stmt)
+        {
+            var buf = new StringBuilder();
+            buf.AppendLine(this.Indent("(try"));
+            this.Indented(() =>
+            {
+                buf.AppendLine(stmt.Body.Accept(this));
+            });
+
+            this.Indented(() =>
+            {
+                // fix for finally/non-finally
+                foreach (var arm in stmt.Arms)
+                {
+                    buf.AppendLine(this.Indent("(except"));
+                    this.Indented(() =>
+                    {
+                        var errors = arm.Errors
+                            .Select(x => x.Accept(this))
+                            .ToArray();
+
+                        var body = this.Indent(arm.Body.Accept(this));
+                        buf.Append(this.Indent($"(list {string.Join(", ", errors)})"));
+                        buf.AppendLine(")");
+                    });
+                }
+            });
+
+            
+            return buf.ToString();
+        }
+
         public string VisitForStmt(Stmt.For stmt)
         {
             var buf = new StringBuilder();
@@ -95,6 +127,17 @@ namespace Oxi
 
         public string VisitExprStmt(Stmt.ExprStmt stmt) =>
             this.Indent(this.Parenthesize("stmt", stmt.Expression));
+
+        public string VisitTryExpr(Expr.Try @try)
+        {
+            var expr = @try.Expr.Accept(this);
+            var codes = @try.Errors
+                .Select(x => x.Accept(this))
+                .ToArray();
+
+            var alt = @try.Alternative.Accept(this);
+            return $"(try {expr} (list {string.Join(", ", codes)}) {alt})";
+        }
 
         public string VisitFunctionCall(Expr.FunctionCall expr)
         {

@@ -1,13 +1,25 @@
 namespace Oxi
 {
+    using System;
+
     public abstract partial class Value : IValue
     {
         public abstract ValueKind Kind { get; }
 
         public abstract bool IsTruthy { get; }
 
-        public virtual IValue Negate() =>
-            Value.Boolean.Get(!this.IsTruthy);
+        public static int _TypeOf(IValue value) =>
+            value switch
+            {
+                Value.Boolean => (int)ValueKind.Boolean,
+                Value.Integer => (int)ValueKind.Integer,
+                Value.String => (int)ValueKind.String,
+                Value.Float => (int)ValueKind.Float,
+                Value.Object => (int)ValueKind.Object,
+                _ => throw new NotSupportedException(value.Kind.ToString()),
+            };
+
+        public IValue TypeOf() => new Value.Integer(_TypeOf(this));
 
         public static bool IsZero(IValue value) =>
             value switch
@@ -18,6 +30,9 @@ namespace Oxi
 
         public static bool IsType<T>(IValue value)
             where T : IValue => value is T;
+
+        public virtual IValue Negate() =>
+            Value.Boolean.Get(!this.IsTruthy);
 
         public abstract IValue Clone();
 

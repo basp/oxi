@@ -6,6 +6,11 @@ namespace Oxi
     {
         public class Integer : Value, IValue<int>, IFloatable, IOrdinal
         {
+            public Integer(ValueKind kind)
+            {
+                this.Value = (int)kind;
+            }
+
             public Integer(int value)
             {
                 this.Value = value;

@@ -133,6 +133,16 @@ namespace Oxi
             return buf.ToString();
         }
 
+        public string VisitTryExpr(Expr.Try expr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string VisitTryStmt(Stmt.Try stmt)
+        {
+            throw new NotImplementedException();
+        }
+
         public string VisitProperty(Expr.Property expr)
         {
             var obj = expr.Object.Accept(this);

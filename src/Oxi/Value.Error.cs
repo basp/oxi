@@ -1,5 +1,8 @@
 namespace Oxi
 {
+    using Optional;
+    using Superpower.Model;
+
     public abstract partial class Value
     {
         public class Error : Value, IValue
@@ -44,6 +47,8 @@ namespace Oxi
             public override ValueKind Kind => ValueKind.Error;
 
             public string Message { get; }
+
+            public Option<Position> Position { get; }
 
             public override bool IsTruthy => false;
 

@@ -15,6 +15,8 @@ namespace Oxi
             T VisitIfStmt(If stmt);
 
             T VisitForStmt(For stmt);
+
+            T VisitTryStmt(Stmt.Try stmt);
         }
 
         public abstract Token<TokenKind> Token { get; }
@@ -69,6 +71,41 @@ namespace Oxi
                 visitor.VisitReturn(this);
         }
 
+        public class Try : Stmt
+        {
+            public Try(Token<TokenKind> tok, Stmt body, Arm[] arms)
+            {
+                this.Token = tok;
+                this.Body = body;
+                this.Arms = arms;
+            }
+
+            public override Token<TokenKind> Token { get; }
+
+            public Stmt Body { get; }
+
+            public Try.Arm[] Arms { get; }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitTryStmt(this);
+
+            public class Arm
+            {
+                public Arm(Expr id, Expr[] errors, Stmt body)
+                {
+                    this.Identifier = id;
+                    this.Errors = errors;
+                    this.Body = body;
+                }
+
+                public Expr Identifier { get; }
+
+                public Expr[] Errors { get; }
+
+                public Stmt Body { get; }
+            }
+        }
+
         public class For : Stmt
         {
             public For(Token<TokenKind> tok, Expr id, Expr condition, Stmt body)
@@ -115,6 +152,19 @@ namespace Oxi
 
             public override T Accept<T>(IVisitor<T> visitor) =>
                 visitor.VisitIfStmt(this);
+
+            public class Arm
+            {
+                public Arm(Expr condition, Stmt consequence)
+                {
+                    this.Condition = condition;
+                    this.Consequence = consequence;
+                }
+
+                public Expr Condition { get; }
+
+                public Stmt Consequence { get; }
+            }
         }
     }
 }

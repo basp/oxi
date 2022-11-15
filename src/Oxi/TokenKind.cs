@@ -8,6 +8,9 @@ namespace Oxi
         Comment,
 
         // one character tokens
+        [Token(Example = "`")]
+        Acute,
+
         [Token(Example = "^")]
         Caret,
 
@@ -127,6 +130,7 @@ namespace Oxi
         EndIf,
         EndTry,
         EndWhile,
+        Except,
         False,
         For,
         Fork,

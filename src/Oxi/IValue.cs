@@ -6,6 +6,8 @@ namespace Oxi
 
         bool IsTruthy { get; }
 
+        IValue TypeOf();
+
         IValue Negate();
 
         IValue Clone();

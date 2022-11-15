@@ -9,15 +9,8 @@ namespace Oxi
         private readonly IDictionary<string, IValue> vars =
             new Dictionary<string, IValue>();
 
-        private readonly IDictionary<string, IValue> scope;
-
         public Environment()
         {
-        }
-
-        public Environment(Environment scope)
-        {
-            this.scope = scope;
         }
 
         public ICollection<string> Keys => this.vars.Keys;
@@ -35,11 +28,6 @@ namespace Oxi
                 if (this.ContainsKey(key))
                 {
                     return this.vars[key];
-                }
-
-                if (this.scope.ContainsKey(key))
-                {
-                    return this.scope[key];
                 }
 
                 return Value.Error.VARNF;

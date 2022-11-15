@@ -7,8 +7,33 @@ namespace Oxi
 
     public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
     {
+        private static readonly IKernel kernel = new Kernel();
+
+        private static readonly IDictionary<string, Func<IValue[], IValue>> bi =
+            new Dictionary<string, Func<IValue[], IValue>>()
+            {
+                ["typeof"] = (xs) => kernel.TypeOf(xs),
+                ["valid"] = (xs) => kernel.Valid(xs),
+            };
+
         private readonly Stack<Environment> env =
-            new Stack<Environment>(new[] { new Environment() });
+            new Stack<Environment>(new[]
+            {
+                // TODO: Move this somewhere else
+                new Environment()
+                {
+                    // types
+                    ["INT"] = new Value.Integer(ValueKind.Integer),
+                    ["FLOAT"] = new Value.Integer(ValueKind.Float),
+                    ["STRING"] = new Value.Integer(ValueKind.String),
+                    ["LIST"] = new Value.Integer(ValueKind.List),
+                    ["ERR"] = new Value.Integer(ValueKind.Error),
+                    
+                    // errors
+                    ["E_NONE"] = new Value.Integer(0),
+                    ["E_PROPNF"] = new Value.Integer(1),
+                },
+            });
 
         public IValue Exec(Stmt stmt)
         {
@@ -67,7 +92,12 @@ namespace Oxi
                 return stmt.Alternative.Accept(this);
             }
 
-            return Value.Boolean.Get(false);
+            return Value.Boolean.False;
+        }
+
+        public IValue VisitTryStmt(Stmt.Try stmt)
+        {
+            throw new NotImplementedException();
         }
 
         public IValue VisitForStmt(Stmt.For stmt)
@@ -82,7 +112,7 @@ namespace Oxi
                 _ => throw new InvalidOperationException(),
             };
 
-            IValue result = Value.Boolean.Get(false);
+            IValue result = Value.Boolean.False;
             var scope = this.env.Peek();
             if (cond is IAggregate agg)
             {
@@ -112,7 +142,7 @@ namespace Oxi
             {
                 // short-circuit `and` operator
                 // don't evaluale right-hand side when left is false
-                return Value.Boolean.Get(false);
+                return Value.Boolean.False;
             }
 
             var right = ThrowIfError(
@@ -234,9 +264,24 @@ namespace Oxi
 
         public IValue VisitLiteral(Expr.Literal expr) => expr.Value;
 
-        public IValue VisitFunctionCall(Expr.FunctionCall expr)
+        public IValue VisitTryExpr(Expr.Try expr)
         {
             throw new NotImplementedException();
+        }
+
+        public IValue VisitFunctionCall(Expr.FunctionCall expr)
+        {
+            var id = (Expr.Identifier)expr.Function;
+            if (bi.TryGetValue(id.Value, out var fn))
+            {
+                var args = expr.Arguments
+                    .Select(x => x.Accept(this))
+                    .ToArray();
+
+                return fn(args);
+            }
+
+            throw new NotImplementedException(id.Value);
         }
 
         public IValue VisitVerbCall(Expr.VerbCall expr)
@@ -327,12 +372,12 @@ namespace Oxi
         {
             if (a == null && b == null)
             {
-                return Value.Boolean.Get(true);
+                return Value.Boolean.True;
             }
 
             if (a == null)
             {
-                return Value.Boolean.Get(false);
+                return Value.Boolean.False;
             }
 
             return Value.Boolean.Get(a.Equals(b));
@@ -342,12 +387,12 @@ namespace Oxi
         {
             if (a == null && b == null)
             {
-                return Value.Boolean.Get(false);
+                return Value.Boolean.False;
             }
 
             if (a == null)
             {
-                return Value.Boolean.Get(true);
+                return Value.Boolean.True;
             }
 
             return Value.Boolean.Get(!a.Equals(b));
@@ -407,14 +452,6 @@ namespace Oxi
 
             scope[id] = value;
             return value;
-        }
-
-        private void Scoped(Action<Environment> act)
-        {
-            var scope = new Environment(this.env.Peek());
-            this.env.Push(scope);
-            act(scope);
-            this.env.Pop();
         }
     }
 }

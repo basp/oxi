@@ -23,6 +23,7 @@ namespace Oxi
                 ["endif"] = TokenKind.EndIf,
                 ["endtry"] = TokenKind.EndTry,
                 ["endwhile"] = TokenKind.EndWhile,
+                ["except"] = TokenKind.Except,
                 ["false"] = TokenKind.False,
                 ["for"] = TokenKind.For,
                 ["fork"] = TokenKind.Fork,
@@ -58,6 +59,7 @@ namespace Oxi
             SimpleOps['?'] = TokenKind.Question;
             SimpleOps['$'] = TokenKind.Dollar;
             SimpleOps['#'] = TokenKind.Pound;
+            SimpleOps['`'] = TokenKind.Acute;
         }
 
         protected override IEnumerable<Result<TokenKind>> Tokenize(

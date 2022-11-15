@@ -26,6 +26,7 @@ namespace Oxi
                     Parse.Ref(() => ReturnStmt),
                     Parse.Ref(() => ExprStmt),
                     Parse.Ref(() => IfStmt),
+                    Parse.Ref(() => TryStmt),
                     Parse.Ref(() => ForStmt))
                 .Many()
             let tok = stmts.Length > 0
@@ -49,6 +50,26 @@ namespace Oxi
 
         private static readonly TokenListParser<TokenKind, Stmt> OptionalElse =
             Token.EqualTo(TokenKind.Else).IgnoreThen(Block).OptionalOrDefault();
+
+        // except x1 (e1, e2)
+        //     <block>
+        private static readonly TokenListParser<TokenKind, Stmt.Try.Arm> Except =
+            from @except in Token.EqualTo(TokenKind.Except)
+            from id in Identifier
+            from errors in Identifier
+                .ManyDelimitedBy(Token.EqualTo(TokenKind.Comma))
+                .Between(
+                    Token.EqualTo(TokenKind.LeftParen),
+                    Token.EqualTo(TokenKind.RightParen))
+            from body in Block
+            select new Stmt.Try.Arm(id, errors, body);
+
+        private static readonly TokenListParser<TokenKind, Stmt> TryStmt =
+            from @try in Token.EqualTo(TokenKind.Try)
+            from body in Block
+            from arms in Except.Many()
+            from @end in Token.EqualTo(TokenKind.EndTry)
+            select (Stmt)new Stmt.Try(@try, body, arms);
 
         private static readonly TokenListParser<TokenKind, Stmt> IfStmt =
             from @if in IfThen(TokenKind.If)
@@ -206,6 +227,16 @@ namespace Oxi
                     Token.EqualTo(TokenKind.RightParen))
             select (Expr)new Expr.Grouping(expr.Token, expr);
 
+        private static readonly TokenListParser<TokenKind, Expr> TryExpr =
+            from ltick in Token.EqualTo(TokenKind.Acute)
+            from expr in Expr
+            from bang in Token.EqualTo(TokenKind.Bang)
+            from errors in Identifier.ManyDelimitedBy(Token.EqualTo(TokenKind.Comma))
+            from arrow in Token.EqualTo(TokenKind.EqualGreater)
+            from alt in Expr
+            from rtick in Token.EqualTo(TokenKind.Acute)
+            select (Expr)new Expr.Try(ltick, expr, errors, alt);
+
         private static readonly TokenListParser<TokenKind, Expr> FunctionCall =
             from fn in Grouping.Or(Identifier)
             from args in Expr
@@ -247,6 +278,7 @@ namespace Oxi
 
         private static readonly TokenListParser<TokenKind, Expr> Factor =
             Parse.OneOf(
+                TryExpr,
                 FunctionCall.Try(),
                 VerbCall.Try(),
                 DollarVerb.Try(),

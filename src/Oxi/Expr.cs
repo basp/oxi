@@ -19,6 +19,8 @@
 
             T VisitUnary(Unary expr);
 
+            T VisitTryExpr(Expr.Try expr);
+
             T VisitFunctionCall(FunctionCall expr);
 
             T VisitVerbCall(VerbCall expr);
@@ -113,6 +115,28 @@
 
             public override T Accept<T>(IVisitor<T> visitor) =>
                 visitor.VisitGrouping(this);
+        }
+
+        public class Try : Expr
+        {
+            public Try(Token<TokenKind> tok, Expr expr, Expr[] errors, Expr alt)
+            {
+                this.Token = tok;
+                this.Expr = expr;
+                this.Errors = errors;
+                this.Alternative = alt;
+            }
+
+            public Expr Expr { get; }
+
+            public Expr[] Errors { get; }
+
+            public Expr Alternative { get; }
+
+            public override Token<TokenKind> Token { get; }
+
+            public override T Accept<T>(IVisitor<T> visitor) =>
+                visitor.VisitTryExpr(this);
         }
 
         public class Identifier : Expr

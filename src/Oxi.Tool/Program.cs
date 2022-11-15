@@ -26,7 +26,7 @@
             var printers = new Dictionary<Stmt.IVisitor<string>, bool>
             {
                 [new AstPrinter()] = true,
-                [new PrettyPrinter()] = true,
+                [new PrettyPrinter()] = false,
             };
 
             while (true)
@@ -61,7 +61,7 @@
                     }
 
                     Console.WriteLine();
-                    Console.WriteLine("--- Result ".PadRight(60, '-'));
+                    Console.WriteLine("--- Interpreter ".PadRight(60, '-'));
                     var result = interpreter.Exec(ast);
                     Console.WriteLine($"=> {Stringify(result)}");
                 }
@@ -72,6 +72,10 @@
                 catch (ParseException ex)
                 {
                     Print(src, ex);
+                }
+                catch (NotImplementedException ex)
+                {
+                    Console.WriteLine(ex);
                 }
             }
         }
