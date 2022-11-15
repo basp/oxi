@@ -30,6 +30,8 @@ public class ValueReader : IValueReader, IDisposable
                 return this.ReadFloat();
             case ValueKind.Object:
                 return this.ReadObject();
+            case ValueKind.String:
+                return this.ReadString();
             case ValueKind.List:
                 return this.ReadList();
         }

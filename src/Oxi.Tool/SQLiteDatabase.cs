@@ -3,7 +3,7 @@ namespace Oxi.Tool
     public class SQLiteDatabase : IDatabase
     {
         private readonly string path;
-        
+
         public SQLiteDatabase(string path)
         {
             this.path = path;

@@ -15,7 +15,8 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
         {
             ["typeof"] = Runtime.TypeOf,
             ["valid"] = Runtime.Valid,
-            ["bytes"] = TestSerialize,
+            ["pickle"] = TestSerialize,
+            ["unpickle"] = TestDeserialize,
         };
 
     private readonly Stack<Environment> env =
@@ -462,6 +463,31 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
         }
 
         return result;
+    }
+
+    private static IValue TestDeserialize(IValue[] args)
+    {
+        if (args.Length < 1)
+        {
+            return Value.Boolean.False;
+        }
+
+        if (args[0] is not Value.List)
+        {
+            return Value.Error.TYPE;
+        }
+
+        var list = (Value.List)args[0];
+        var buffer = list.Value
+            .Cast<Value.Integer>()
+            .Select(x => (byte)x.Value)
+            .ToArray();
+
+        using (var stream = new MemoryStream(buffer))
+        using (var reader = new ValueReader(stream))
+        {
+            return reader.Read();
+        }
     }
 
     private IValue Assign(Expr.Binary expr)
