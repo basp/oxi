@@ -91,7 +91,7 @@ This works because an expression only produces a value and **should not have any
 
 > This also does not work because the tokenizer and parser team are quite stupid and do not have the expertise right now to properly cater for all the use-cases that users come up with.
 
-Anyway, you should not put semicolons wherever you feel like they make sense since they do impact the parser (in some bad ways).
+Anyway, you **should not** put semicolons wherever you feel like they make sense since they do impact the parser (in some bad ways).
 
 If you do this then you'll see that the result of the `for` is the result of the last expression in the body of the loop.
 ```
