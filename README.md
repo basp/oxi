@@ -74,7 +74,7 @@ And we can see that the result of a `for` is the result of the final stament in 
 
 > Note that even statements produce values, don't worry too much about it. Think of statements as a more powerful version of expressions. Where expressions can only produce a value based on known inputs, a statement can make use of persistence and the world around it to produce a value. It's less mathematical and more mechanical. Expressions are usually purely mathematical. This also means that the singular result of a statement doesn't always make much sense (like in the examples above). However, it should always make the *most* sense given the assumptions.
 
-The semicolon after `"frotz"` is important otherwise the parser will assume `endfor` is part of some expression that is part of the `for` body. If we omit that semicolon we get an error informing us that we missed that semicolon somewhere:
+The semicolon after `"frotz"` is important otherwise the parser will assume `endfor`4 is part of some expression that is part of the `for` body. If we omit that semicolon we get an error informing us that we missed that semicolon somewhere:
 ```
 Syntax error (line 1, column 28): unexpected endfor `endfor`, expected `;`.
 for x in [0 .. 10] "frotz" endfor;
@@ -84,6 +84,10 @@ for x in [0 .. 10] "frotz" endfor;
 This will behave as a statement. However, you might be tempted to write the following:
 ```
 for x in [0..10] "frotz"; endfor; 123;
+=> "frotz"
 ```
+And expect the answer to be `123` but the interpreter will answer `"frotz"` instead. This is a bug that causes a `return` value somewhere because of the empty statement caused by the stray semicolon (`;`) after the `endfor` keyword. It looks like the `endfor` already closes the statement so the parser gets in a confused state with the empty statement and somehow decides to return early (needs investigation).
 
-And in this case 
+> Although this is a syntax error we shouldn't be too obnoxious about it, I want to provider a better experience for this one but I do not want it to be too magical. It seems like empty expressions should just be ignored but they should definitely not lead to an early return.
+
+For now the workaround is to *not* make this syntax error. Use semicolons **only** when you need to **turn an expression into a statement** and leave them out otherwise.
