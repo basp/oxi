@@ -54,7 +54,7 @@ This can get a bit confusing however if you're not exactly sure what is a statem
 
 > Generally, everything that involves keywords is usually a statement. For example, `if`, `for`, `try`, etc. On the other hand, if it involves symbols like `+`, `-` and `*` then it's usually expressions. 
 >
-> Similarly, if it changes some kind of common or global state then it should be considered an expression, if something just produces a value based on its inputs then it's best considered an expression. 
+> Similarly, if it changes some kind of common or global state then it should be considered an statement, if something just produces a value based on its inputs then it's best considered an expression. 
 >
 > In short, statements change state and expressions produce values.
 
