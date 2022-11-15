@@ -117,4 +117,4 @@ And expect the answer to be `123` but the interpreter will answer `"frotz"` inst
 
 > Although this is a syntax error we shouldn't be too obnoxious about it, I want to provider a better experience for this one but I do not want it to be too magical. It seems like empty expressions should just be ignored but they should definitely not lead to an early return.
 
-For now the workaround is to *not* make this syntax error. Use semicolons **only** when you need to **turn an expression into a statement** and leave them out otherwise.
+For now the workaround is to *not* make this future syntax error that is currently not observed by the parser. Use semicolons **only** when you need to **turn an expression into a statement** and leave them out otherwise. Be careful my friends!
