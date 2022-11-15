@@ -15,8 +15,7 @@ public abstract partial class Value
 
         public double Value { get; }
 
-        public override bool IsTruthy =>
-            this.Value > 0.0 || this.Value < -0.0;
+        public override bool IsTruthy => this.Value != 0;
 
         public override IValue Clone() => new Float(this.Value);
 
