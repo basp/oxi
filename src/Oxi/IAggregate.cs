@@ -1,27 +1,26 @@
-namespace Oxi
+namespace Oxi;
+
+using System.Collections.Generic;
+
+public interface IAggregate : IValue, IEnumerable<IValue>
 {
-    using System.Collections.Generic;
+    int Size { get; }
 
-    public interface IAggregate : IValue, IEnumerable<IValue>
-    {
-        int Size { get; }
+    IList<IValue> Elements { get; }
 
-        IList<IValue> Elements { get; }
+    IValue First();
 
-        IValue First();
+    IAggregate Rest();
 
-        IAggregate Rest();
+    IValue Cons(IValue value);
 
-        IValue Cons(IValue value);
+    IValue Uncons(out IAggregate rest);
 
-        IValue Uncons(out IAggregate rest);
+    IValue Concat(IAggregate value);
 
-        IValue Concat(IAggregate value);
+    IAggregate Drop(int n);
 
-        IAggregate Drop(int n);
+    IAggregate Take(int n);
 
-        IAggregate Take(int n);
-
-        IValue At(int i);
-    }
+    IValue At(int i);
 }

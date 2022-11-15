@@ -1,10 +1,9 @@
-namespace Oxi
-{
-    using System.Globalization;
+namespace Oxi;
 
-    public static class Config
-    {
-        public static readonly CultureInfo CultureInfo =
-            new CultureInfo("en-US");
-    }
+using System.Globalization;
+
+public static class Config
+{
+    public static readonly CultureInfo CultureInfo =
+        new CultureInfo("en-US");
 }

@@ -1,53 +1,52 @@
-namespace Oxi
+namespace Oxi;
+
+public interface IFloatable : IValue
 {
-    public interface IFloatable : IValue
-    {
-        Value.Float AsFloat();
+    Value.Float AsFloat();
 
-        IValue Rem(IValue value);
+    IValue Rem(IValue value);
 
-        IValue Add(IValue value);
+    IValue Add(IValue value);
 
-        IValue Sub(IValue value);
+    IValue Sub(IValue value);
 
-        IValue Mul(IValue value);
+    IValue Mul(IValue value);
 
-        IValue Divide(IValue value);
+    IValue Divide(IValue value);
 
-        IValue Acos();
+    IValue Acos();
 
-        IValue Asin();
+    IValue Asin();
 
-        IValue Atan();
+    IValue Atan();
 
-        IValue Ceil();
+    IValue Ceil();
 
-        IValue Cos();
+    IValue Cos();
 
-        IValue Cosh();
+    IValue Cosh();
 
-        IValue Exp();
+    IValue Exp();
 
-        IValue Floor();
+    IValue Floor();
 
-        IValue Log();
+    IValue Log();
 
-        IValue Log10();
+    IValue Log10();
 
-        IValue Sin();
+    IValue Sin();
 
-        IValue Sinh();
+    IValue Sinh();
 
-        IValue Sqrt();
+    IValue Sqrt();
 
-        IValue Tan();
+    IValue Tan();
 
-        IValue Tanh();
+    IValue Tanh();
 
-        IValue Min(IValue value);
+    IValue Min(IValue value);
 
-        IValue Max(IValue value);
+    IValue Max(IValue value);
 
-        int CompareTo(IValue value);
-    }
+    int CompareTo(IValue value);
 }

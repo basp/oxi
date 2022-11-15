@@ -1,27 +1,26 @@
-namespace Oxi
+namespace Oxi;
+
+public enum ValueKind
 {
-    public enum ValueKind
-    {
-        None = 0,
+    None = 0,
 
-        Return = 1,
+    Return = 1,
 
-        Boolean = 2,
+    Boolean = 2,
 
-        Character = 3,
+    Character = 3,
 
-        Integer = 4,
+    Integer = 4,
 
-        Float = 5,
+    Float = 5,
 
-        String = 6,
+    String = 6,
 
-        Object = 7,
+    Object = 7,
 
-        List = 8,
+    List = 8,
 
-        Hash = 9,
+    Hash = 9,
 
-        Error = 100,
-    }
+    Error = 100,
 }

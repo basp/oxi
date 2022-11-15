@@ -1,11 +1,10 @@
-namespace Oxi
+namespace Oxi;
+
+public class Task
 {
-    public class Task
-    {
-        public int Id { get; }
+    public int Id { get; }
 
-        public Stmt.Block Block { get; }
+    public Stmt.Block Block { get; }
 
-        public Environment Environment { get; }
-    }
+    public Environment Environment { get; }
 }

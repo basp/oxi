@@ -1,21 +1,20 @@
-namespace Oxi
+namespace Oxi;
+
+public interface IOrdinal : IValue
 {
-    public interface IOrdinal : IValue
-    {
-        int OrdinalValue { get; }
+    int OrdinalValue { get; }
 
-        int CompareTo(IOrdinal value);
+    int CompareTo(IOrdinal value);
 
-        IValue Ord();
+    IValue Ord();
 
-        IValue Chr();
+    IValue Chr();
 
-        IValue Succ();
+    IValue Succ();
 
-        IValue Pred();
+    IValue Pred();
 
-        IValue Min(IOrdinal value);
+    IValue Min(IOrdinal value);
 
-        IValue Max(IOrdinal value);
-    }
+    IValue Max(IOrdinal value);
 }

@@ -1,16 +1,16 @@
-namespace Oxi.Tests
-{
-    using System.Linq;
-    using Xunit;
+namespace Oxi.Tests;
 
-    public class ScannerTest
+using System.Linq;
+using Xunit;
+
+public class ScannerTest
+{
+    [Fact]
+    public void TestNextToken()
     {
-        [Fact]
-        public void TestNextToken()
+        var input = "=+(){},;";
+        var tests = new[]
         {
-            var input = "=+(){},;";
-            var tests = new[]
-            {
                 (TokenKind.Equal, "="),
                 (TokenKind.Plus, "+"),
                 (TokenKind.LeftParen, "("),
@@ -21,16 +21,15 @@ namespace Oxi.Tests
                 (TokenKind.Semicolon, ";"),
             };
 
-            var scanner = new Scanner();
-            var tokens = scanner.Tokenize(input).ToArray();
+        var scanner = new Scanner();
+        var tokens = scanner.Tokenize(input).ToArray();
 
-            for (var i = 0; i < tests.Length; i++)
-            {
-                var (expectedKind, expectedStringValue) = tests[i];
-                var actual = tokens[i];
-                Assert.Equal(expectedKind, actual.Kind);
-                Assert.Equal(expectedStringValue, actual.ToStringValue());
-            }
+        for (var i = 0; i < tests.Length; i++)
+        {
+            var (expectedKind, expectedStringValue) = tests[i];
+            var actual = tokens[i];
+            Assert.Equal(expectedKind, actual.Kind);
+            Assert.Equal(expectedStringValue, actual.ToStringValue());
         }
     }
 }

@@ -439,30 +439,27 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
 
     private static IValue TestSerialize(IValue[] args)
     {
-        var result = new Value.List();
-
         if (args.Length < 1)
         {
-            return result;
+            return Value.List.Empty;
         }
 
-        using (var stream = new MemoryStream())
-        using (var writer = new ValueWriter(stream))
-        {
-            args[0].Accept(writer);
-            var numberOfBytes = stream.Position;
-            stream.Position = 0;
-            using (var reader = new BinaryReader(stream))
-            {
-                for (var i = 0; i < numberOfBytes; i++)
-                {
-                    var x = reader.ReadByte();
-                    result.Value.Add(new Value.Integer(x));
-                }
-            }
-        }
+        using var stream = new MemoryStream();
+        using var writer = new ValueWriter(stream);
+        using var reader = new BinaryReader(stream);
 
-        return result;
+        args[0].Accept(writer);
+
+        // Support up to max int for now, might wanna throw otherwise.
+        var numberOfBytes = (int)stream.Position;
+        stream.Position = 0;
+        var xs = Enumerable
+            .Range(0, numberOfBytes)
+            .Select(_ => reader.ReadByte())
+            .Select(x => new Value.Integer(x))
+            .ToArray();
+
+        return new Value.List(xs);
     }
 
     private static IValue TestDeserialize(IValue[] args)
@@ -483,11 +480,9 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
             .Select(x => (byte)x.Value)
             .ToArray();
 
-        using (var stream = new MemoryStream(buffer))
-        using (var reader = new ValueReader(stream))
-        {
-            return reader.Read();
-        }
+        using var stream = new MemoryStream(buffer);
+        using var reader = new ValueReader(stream);
+        return reader.Read();
     }
 
     private IValue Assign(Expr.Binary expr)
