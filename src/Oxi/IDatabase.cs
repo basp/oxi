@@ -2,6 +2,8 @@ namespace Oxi;
 
 public interface IDatabase
 {
+    // bool Valid(int id);
+
     int Create();
 
     void Recycle(int id);

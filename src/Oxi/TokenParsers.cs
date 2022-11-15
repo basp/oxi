@@ -24,7 +24,7 @@ namespace Oxi
             from stmts in Parse
                 .OneOf(
                     Parse.Ref(() => ReturnStmt),
-                    Parse.Ref(() => ExprStmt),
+                    Parse.Ref(() => ExprStmt), // shouldn't this be at the end?
                     Parse.Ref(() => IfStmt),
                     Parse.Ref(() => TryStmt),
                     Parse.Ref(() => ForStmt))
