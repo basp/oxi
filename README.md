@@ -112,7 +112,7 @@ for x in [0 .. 10] x endfor;
                            ^
 ```
 
-This will behave as a statement. However, you might be tempted to write the following:
+You might be tempted to write the following:
 ```
 for x in [0..10] "frotz"; endfor; 123;
 => "frotz"
