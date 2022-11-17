@@ -8,34 +8,21 @@ using Superpower.Parsers;
 public static class TokenParsers
 {
     public static readonly TokenListParser<TokenKind, Stmt> Program =
-        Parse.Ref(() => Block);
+        Parse.Ref(() => Block).AtEnd();
 
     private static readonly TokenListParser<TokenKind, Expr> Expr =
         Parse.Ref(() => Assignment);
-
-    private static readonly Stmt Zero =
-        new Stmt.ExprStmt(
-            Token<TokenKind>.Empty,
-            new Expr.Literal(
-                Token<TokenKind>.Empty,
-                new Value.Integer(0)));
 
     private static readonly TokenListParser<TokenKind, Stmt> Block =
         from stmts in Parse
             .OneOf(
                 Parse.Ref(() => ReturnStmt),
-                Parse.Ref(() => ExprStmt), // shouldn't this be at the end?
                 Parse.Ref(() => IfStmt),
                 Parse.Ref(() => TryStmt),
-                Parse.Ref(() => ForStmt))
-            .Many()
-        let tok = stmts.Length > 0
-            ? stmts[0].Token
-            : Token<TokenKind>.Empty
-        let body = stmts.Length > 0
-            ? stmts
-            : new Stmt[] { Zero }
-        select (Stmt)new Stmt.Block(tok, body);
+                Parse.Ref(() => ForStmt),
+                Parse.Ref(() => ExprStmt))
+            .AtLeastOnce()
+        select (Stmt)new Stmt.Block(stmts[0].Token, stmts);
 
     private static readonly TokenListParser<TokenKind, Stmt> ExprStmt =
         from expr in Expr

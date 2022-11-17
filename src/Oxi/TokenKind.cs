@@ -56,13 +56,13 @@ public enum TokenKind
     [Token(Example = "%")]
     Percent,
 
-    [Token(Example = ":")]
+    [Token(Category = "operator", Example = ":")]
     Colon,
 
-    [Token(Category = "operator", Example = ";")]
+    [Token(Description = "semicolon", Example = ";")]
     Semicolon,
 
-    [Token(Example = "?")]
+    [Token(Category = "operator", Example = "?")]
     Question,
 
     // one or two character tokens

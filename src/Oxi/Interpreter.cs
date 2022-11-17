@@ -16,7 +16,7 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
         new Stack<Environment>(new[]
         {
             // global scope (might need to move this later)
-            new Environment()
+            new Environment
             {
                 ["INT"] = new Value.Integer(ValueKind.Integer),
                 ["FLOAT"] = new Value.Integer(ValueKind.Float),
@@ -34,7 +34,7 @@ public class Interpreter : Expr.IVisitor<IValue>, Stmt.IVisitor<IValue>
     {
         this.db = db;
 
-        this.bi = new Dictionary<string, Func<IValue[], IValue>>()
+        this.bi = new Dictionary<string, Func<IValue[], IValue>>
         {
             ["typeof"] = this.runtime.TypeOf,
             ["valid"] = this.runtime.Valid,
